@@ -1,0 +1,208 @@
+// csmju-coop-hours-calculator — ฐานข้อมูลของระบบนี้เท่านั้น (ARC-01 Database per Subsystem)
+//
+// ตาราง/คอลัมน์เป็น snake_case ผ่าน @@map/@map · field ใน Prisma เป็น camelCase
+// (data-dictionary.md ข้อ 9) · id ทุกตัวเป็น UUID (api-conventions.md ข้อ 6)
+//
+// ตัวตนผู้ใช้อ้างด้วย `core_user_id` (= claim `sub` จาก Core Hub) เท่านั้น
+// ห้ามใช้ alias อื่นแทนค่านี้ (ดูรายการ alias ต้องห้ามใน data-dictionary.md ข้อ 9.2)
+// ระบบนี้ไม่เก็บรหัสผ่าน ไม่มีตาราง user ซ้ำกับ Core Hub — user_profiles เก็บแค่
+// ข้อมูลธุรกิจของระบบนี้เอง (ชื่อที่แสดง สาขา ชั้นปี) ซึ่ง Core Hub v1.0 ยังไม่มีให้
+
+generator client {
+  provider     = "prisma-client"
+  output       = "../generated/prisma"
+  moduleFormat = "cjs"
+}
+
+// connection string มาจาก prisma.config.ts (CLI) และ PrismaPg adapter (runtime)
+datasource db {
+  provider = "postgresql"
+}
+
+model UserProfile {
+  id          String   @id @default(uuid()) @db.Uuid
+  coreUserId  String   @unique @map("core_user_id")   // ค่า sub จาก token
+  coreRole    CoreRole @default(student) @map("core_role") // สำเนาจาก token ล่าสุด (อ่านอย่างเดียว)
+  email       String?
+  studentCode String?  @unique @map("student_code")    // ข้อมูลธุรกิจของระบบนี้
+  fullName    String?  @map("full_name")
+  displayName String?  @map("display_name")
+  faculty     String?  @default("วิทยาศาสตร์")
+  major       String?
+  yearLevel   Int?     @map("year_level")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  summary        UserHourSummary?
+  registrations  Registration[]
+  participations Participation[]
+  hourRequests   HourRequest[]
+
+  @@index([coreRole])
+  @@map("user_profiles")
+}
+
+model Activity {
+  id                   String         @id @default(uuid()) @db.Uuid
+  title                String
+  description          String         @default("")
+  location             String         @default("")
+  activityType         String         @default("GENERAL") @map("activity_type")
+  date                 DateTime       @default(now())
+  startTime            DateTime       @default(now()) @map("start_time")
+  endTime              DateTime       @default(now()) @map("end_time")
+  registrationOpen     DateTime       @default(now()) @map("registration_open")
+  registrationClose    DateTime       @default(now()) @map("registration_close")
+  registrationDeadline DateTime       @default(now()) @map("registration_deadline")
+  capacity             Int            @default(50)
+  hours                Float          @default(0)
+  lecturerInCharge     String         @default("") @map("lecturer_in_charge")
+  coopHours            Float          @default(0) @map("coop_hours")
+  volunteerHours       Float          @default(0) @map("volunteer_hours")
+  majorHours           Float          @default(0) @map("major_hours")
+  status               ActivityStatus @default(OPEN)
+  createdBy            String?        @map("created_by") // core_user_id ของผู้สร้าง
+  createdAt            DateTime       @default(now()) @map("created_at")
+  updatedAt            DateTime       @updatedAt @map("updated_at")
+
+  registrations  Registration[]
+  participations Participation[]
+  hourRequests   HourRequest[]
+
+  @@index([startTime])
+  @@index([status])
+  @@map("activities")
+}
+
+model HourRequest {
+  id               String              @id @default(uuid()) @db.Uuid
+  coreUserId       String              @map("core_user_id") // เจ้าของคำร้อง
+  activityId       String?             @map("activity_id") @db.Uuid // มีค่าเมื่อระบบสร้างให้จากการลงทะเบียนกิจกรรมของหลักสูตร
+  studentCode      String?             @map("student_code")
+  studentName      String              @default("") @map("student_name")
+  title            String
+  category         HourRequestCategory @default(COOP)
+  hours            Float               @default(0)
+  proofUrl         String?             @map("proof_url")
+  studentPhoto     String?             @map("student_photo")
+  description      String?
+  status           HourRequestStatus   @default(PENDING)
+  statusText       String?             @map("status_text")
+  rejectionReason  String?             @map("rejection_reason")
+  reviewedBy       String?             @map("reviewed_by") // core_user_id ของผู้ตรวจ
+  dateStr          String?             @map("date_str")
+  timeStr          String?             @map("time_str")
+  type             String?             @default("กิจกรรมภายนอก")
+  typeCategory     String?             @default("ภายนอก") @map("type_category")
+  approvedHours    Float?              @map("approved_hours")
+  approvedCategory String?             @map("approved_category")
+  imageProof       String?             @map("image_proof")
+  note             String?
+  createdAt        DateTime            @default(now()) @map("created_at")
+  updatedAt        DateTime            @updatedAt @map("updated_at")
+
+  userProfile UserProfile @relation(fields: [coreUserId], references: [coreUserId], onDelete: Restrict)
+  activity    Activity?   @relation(fields: [activityId], references: [id], onDelete: Cascade)
+
+  @@index([status])
+  @@index([coreUserId])
+  @@index([activityId])
+  @@map("hour_requests")
+}
+
+model Registration {
+  id                     String             @id @default(uuid()) @db.Uuid
+  activityId             String             @map("activity_id") @db.Uuid
+  coreUserId             String             @map("core_user_id")
+  status                 RegistrationStatus @default(REGISTERED)
+  queueNumber            Int?               @map("queue_number")
+  registeredAt           DateTime           @default(now()) @map("registered_at")
+  attendedAt             DateTime?          @map("attended_at")
+  cancelledAt            DateTime?          @map("cancelled_at")
+  creditedCoopHours      Float?             @map("credited_coop_hours")
+  creditedVolunteerHours Float?             @map("credited_volunteer_hours")
+  creditedMajorHours     Float?             @map("credited_major_hours")
+  createdAt              DateTime           @default(now()) @map("created_at")
+  updatedAt              DateTime           @updatedAt @map("updated_at")
+
+  activity    Activity    @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  userProfile UserProfile @relation(fields: [coreUserId], references: [coreUserId], onDelete: Restrict)
+
+  @@unique([activityId, queueNumber])
+  @@unique([activityId, coreUserId])
+  @@index([status])
+  @@map("registrations")
+}
+
+model Participation {
+  id           String    @id @default(uuid()) @db.Uuid
+  activityId   String    @map("activity_id") @db.Uuid
+  coreUserId   String    @map("core_user_id")
+  registeredAt DateTime  @default(now()) @map("registered_at")
+  cancelledAt  DateTime? @map("cancelled_at")
+
+  activity    Activity    @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  userProfile UserProfile @relation(fields: [coreUserId], references: [coreUserId], onDelete: Restrict)
+
+  @@unique([activityId, coreUserId])
+  @@index([coreUserId])
+  @@map("participations")
+}
+
+model UserHourSummary {
+  id             String   @id @default(uuid()) @db.Uuid
+  coreUserId     String   @unique @map("core_user_id")
+  coopHours      Float    @default(0) @map("coop_hours")
+  volunteerHours Float    @default(0) @map("volunteer_hours")
+  majorHours     Float    @default(0) @map("major_hours")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  userProfile UserProfile @relation(fields: [coreUserId], references: [coreUserId], onDelete: Restrict)
+
+  @@map("user_hour_summaries")
+}
+
+enum CoreRole {
+  student
+  alumni
+  staff
+  admin
+
+  @@map("core_role")
+}
+
+enum ActivityStatus {
+  OPEN
+  PUBLISHED
+  CLOSED
+  COMPLETED
+
+  @@map("activity_status")
+}
+
+enum HourRequestCategory {
+  COOP
+  VOLUNTEER
+  MAJOR
+
+  @@map("hour_request_category")
+}
+
+enum HourRequestStatus {
+  PENDING
+  PENDING_APPROVAL
+  APPROVED
+  REJECTED
+
+  @@map("hour_request_status")
+}
+
+enum RegistrationStatus {
+  REGISTERED
+  WAITING
+  ATTENDED
+  ABSENT
+  CANCELLED
+
+  @@map("registration_status")
+}

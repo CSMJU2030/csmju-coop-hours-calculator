@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: csmju-coop-hours-calculator-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: csmju
+      POSTGRES_PASSWORD: csmju_password
+      POSTGRES_DB: csmju_coop_hours
+    ports:
+      - "5433:5432"
+    volumes:
+      - csmju_pgdata:/var/lib/postgresql/data
+
+volumes:
+  csmju_pgdata:
