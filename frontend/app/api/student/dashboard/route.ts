@@ -1,0 +1,105 @@
+import { NextResponse } from 'next/server';
+import { ApiError, UnauthenticatedError, apiFetch } from '@/lib/api';
+
+/** ใช้คุกกี้ผู้ใช้ จึง prerender ตอน build ไม่ได้ */
+export const dynamic = 'force-dynamic';
+
+/**
+ * ข้อมูลตั้งต้นของหน้า dashboard นักศึกษา
+ *
+ * เดิม route นี้อ่านฐานข้อมูลตรง ๆ และใช้รหัสนักศึกษาที่ hardcode ไว้ ('6704101359')
+ * ทำให้ทุกคนเห็นข้อมูลของคนคนเดียวกัน ตอนนี้ยิงไป backend ซึ่งรู้ว่าใครเรียกจาก token
+ * รูปแบบข้อมูลที่ส่งกลับไปให้หน้าเว็บยังเหมือนเดิมทุก field หน้า dashboard จึงไม่ต้องแก้
+ */
+
+interface DashboardPayload {
+  hourRequests: Array<{
+    id: string;
+    dateStr: string | null;
+    timeStr: string | null;
+    title: string;
+    typeCategory: string | null;
+    type: string | null;
+    status: string;
+    statusText: string | null;
+    hours: number;
+    approvedHours: number | null;
+    approvedCategory: string | null;
+    rejectionReason: string | null;
+    imageProof: string | null;
+    note: string | null;
+    createdAt: string;
+  }>;
+  activities: Array<{
+    id: string;
+    title: string;
+    category: string;
+    startTime: string;
+    location: string;
+    capacity: number;
+    registeredCount: number;
+    status: string;
+  }>;
+  registeredActivityIds: string[];
+}
+
+export async function GET() {
+  try {
+    const dashboard = await apiFetch<DashboardPayload>('/me/dashboard');
+
+    const activities = dashboard.hourRequests.map((req) => ({
+      id: req.id,
+      dateStr: req.dateStr ?? new Date(req.createdAt).toLocaleDateString('th-TH', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+      }),
+      timeStr: req.timeStr || '09:00 - 16:00',
+      title: req.title,
+      categoryTarget: req.typeCategory === 'VOLUNTEER' ? 'VOLUNTEER' : 'COOP',
+      typeDetail: req.type,
+      status: req.status,
+      statusText: req.statusText || (req.status === 'APPROVED' ? 'อนุมัติแล้ว' : 'รอตรวจสอบ'),
+      hours: req.hours,
+      approvedHours: req.approvedHours ?? req.hours,
+      approvedCategory: req.approvedCategory as 'COOP' | 'VOLUNTEER' | undefined,
+      typeCategory: req.typeCategory,
+      reason: req.rejectionReason || undefined,
+      imageProof: req.imageProof || undefined,
+      note: req.note || undefined,
+    }));
+
+    const publishedList = dashboard.activities.map((act) => ({
+      id: act.id,
+      title: act.title,
+      category: act.category,
+      dateStr: new Date(act.startTime).toLocaleDateString('th-TH', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+      }),
+      timeStr: '09:00 - 16:00',
+      location: act.location || 'คณะวิทยาศาสตร์ มหาวิทยาลัยแม่โจ้',
+      hours: 0,
+      capacity: act.capacity,
+      registeredCount: act.registeredCount,
+      status: act.status === 'CLOSED' ? 'CLOSED' : 'OPEN',
+    }));
+
+    return NextResponse.json({
+      success: true,
+      activities,
+      publishedList,
+      registeredIds: dashboard.registeredActivityIds,
+    });
+  } catch (error) {
+    if (error instanceof UnauthenticatedError) {
+      return NextResponse.json({ success: false, error: error.message }, { status: 401 });
+    }
+    if (error instanceof ApiError) {
+      return NextResponse.json({ success: false, error: error.message }, { status: error.status });
+    }
+    console.error('API Dashboard Error:', error);
+    return NextResponse.json({ success: false, error: 'Internal Server Error' }, { status: 500 });
+  }
+}
