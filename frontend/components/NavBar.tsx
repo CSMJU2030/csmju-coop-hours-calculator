@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -15,7 +16,7 @@ export function NavBar({
   const isTeacherPage = isAdmin || pathname.startsWith('/admin');
 
   const displayName =
-    userId ?? (isTeacherPage ? 'ผศ.-dr.กมลวรรณ ศรีวิไล' : 'นางสาวภัคศิรินทร์ จันทร์ดี');
+    userId ?? (isTeacherPage ? 'ผศ.-dr.กมลวรรณ ศรีวิไล' : 'นางสาวพัฒน์นรี วันพิลา');
 
   const roleText = isTeacherPage ? 'อาจารย์' : 'นักศึกษา';
   const badgeLetter = isTeacherPage ? 'T' : 'S';
@@ -23,16 +24,21 @@ export function NavBar({
   return (
     <>
       {/* Top Header */}
-      <header className="no-print sticky top-0 z-40 w-full border-b border-slate-200/60 bg-white/95 backdrop-blur-sm">
+      <header className="no-print sticky top-0 z-40 w-full border-b border-slate-200/70 bg-white/85 backdrop-blur-xl">
         <div className="flex h-[76px] items-center justify-between px-5 lg:px-8">
           {/* Logo */}
           <Link
             href={isTeacherPage ? '/admin/requests' : '/dashboard'}
             className="flex items-center gap-3 group"
           >
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 text-white font-bold text-lg shadow-lg shadow-blue-600/30 transition-all duration-300 group-hover:scale-105 group-hover:shadow-xl">
-              CS
-            </div>
+            <Image
+              src="/logo.png"
+              alt="Computer Science, Maejo University"
+              width={64}
+              height={45}
+              priority
+              className="h-[45px] w-auto"
+            />
 
             <div className="hidden sm:block">
               <p className="text-[15px] font-bold text-slate-800 leading-tight group-hover:text-blue-700 transition-colors">
@@ -69,9 +75,9 @@ export function NavBar({
       </header>
 
       {/* Left Sidebar */}
-      <aside className="no-print fixed left-0 top-[76px] z-30 hidden h-[calc(100vh-76px)] w-[250px] border-r border-slate-200/60 bg-white/95 backdrop-blur-sm lg:flex lg:flex-col">
+      <aside className="no-print fixed left-0 top-[76px] z-30 hidden h-[calc(100vh-76px)] w-[250px] border-r border-slate-200/70 bg-white lg:flex lg:flex-col">
         <div className="flex-1 px-4 py-6">
-          <p className="px-3 mb-3 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+          <p className="px-3 mb-3 text-xs font-semibold text-slate-400">
             เมนู
           </p>
 
@@ -82,7 +88,7 @@ export function NavBar({
                   href="/admin/requests"
                   className={`group flex items-center rounded-xl px-4 py-3 text-sm font-semibold transition-all duration-200 ${
                     pathname.startsWith('/admin/requests')
-                      ? 'bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700 shadow-sm'
+                      ? 'bg-blue-50 text-blue-700 ring-1 ring-blue-100'
                       : 'text-slate-600 hover:bg-slate-50 hover:text-blue-600'
                   }`}
                 >
@@ -100,7 +106,7 @@ export function NavBar({
                   href="/admin/activities"
                   className={`group flex items-center rounded-xl px-4 py-3 text-sm font-semibold transition-all duration-200 ${
                     pathname.startsWith('/admin/activities')
-                      ? 'bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700 shadow-sm'
+                      ? 'bg-blue-50 text-blue-700 ring-1 ring-blue-100'
                       : 'text-slate-600 hover:bg-slate-50 hover:text-blue-600'
                   }`}
                 >
@@ -120,7 +126,7 @@ export function NavBar({
                   href="/dashboard"
                   className={`group flex items-center rounded-xl px-4 py-3 text-sm font-semibold transition-all duration-200 ${
                     pathname === '/dashboard'
-                      ? 'bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700 shadow-sm'
+                      ? 'bg-blue-50 text-blue-700 ring-1 ring-blue-100'
                       : 'text-slate-600 hover:bg-slate-50 hover:text-blue-600'
                   }`}
                 >
@@ -138,7 +144,7 @@ export function NavBar({
                   href="/requests"
                   className={`group flex items-center rounded-xl px-4 py-3 text-sm font-semibold transition-all duration-200 ${
                     pathname.startsWith('/requests')
-                      ? 'bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700 shadow-sm'
+                      ? 'bg-blue-50 text-blue-700 ring-1 ring-blue-100'
                       : 'text-slate-600 hover:bg-slate-50 hover:text-blue-600'
                   }`}
                 >

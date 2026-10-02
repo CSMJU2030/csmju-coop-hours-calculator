@@ -1,0 +1,21 @@
+/**
+ * @csmju2030/design-system — Font faces (self-hosted)
+ * อ้างอิง §4.1 · §15
+ *
+ * 🔴 ห้ามใช้ next/font/google หรือ <link> ไป Google Fonts CDN
+ *    ไฟล์ทั้งหมดที่นี่มาจาก @fontsource ซึ่ง bundle ไปกับระบบย่อยเอง (self-host)
+ *
+ * งบประมาณฟอนต์ (§15): ≤ 4 ไฟล์ / ≤ 200KB
+ *   1. IBM Plex Sans Thai 400   (ตัวไทย เนื้อความ)
+ *   2. IBM Plex Sans Thai 600   (ตัวไทย หัวเรื่อง/เน้น)
+ *   3. Inter Variable           (ละติน เนื้อความ/UI)
+ *   4. Plus Jakarta Sans Var    (ละติน หัวเรื่อง)
+ *
+ * IBM Plex Mono ไม่ได้รวมมาให้ (จะเกินงบ 4 ไฟล์)
+ * ระบบย่อยที่ต้องใช้จริงให้ import เพิ่มเอง: @import "@fontsource/ibm-plex-mono/400.css";
+ */
+
+@import "@fontsource/ibm-plex-sans-thai/400.css";
+@import "@fontsource/ibm-plex-sans-thai/600.css";
+@import "@fontsource-variable/inter/index.css";
+@import "@fontsource-variable/plus-jakarta-sans/index.css";

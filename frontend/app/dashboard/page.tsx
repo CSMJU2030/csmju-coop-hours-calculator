@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
+import { PageBanner, bannerButtonClass } from '@/components/PageBanner';
 import {
   COOP_CONFIG,
   THAI_MONTHS,
@@ -252,37 +253,24 @@ export default function StudentDashboardPage() {
   return (
     <div className="space-y-8 pb-16 max-w-7xl mx-auto px-4 sm:px-6">
       {/* 1. ส่วนหัวแบนเนอร์ */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900 via-blue-700 to-blue-600 border border-blue-400/20 p-8 md:p-10 shadow-2xl shadow-blue-900/20 transition-all duration-300 hover:shadow-2xl hover:border-slate-700">
-        <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-          <div className="space-y-2">
-            <div className="inline-flex items-center px-3 py-1 rounded-full bg-white/10 border border-white/20 text-blue-100 backdrop-blur-sm text-xs font-semibold">
-              นักศึกษา รหัส 67 • 
-            </div>
-            <h1 className="text-2xl md:text-3xl font-extrabold text-white tracking-tight">
-              นางสาวพัฒน์นรี วันพิลา
-            </h1>
-            <p className="text-slate-400 text-xs md:text-sm">
-              สาขาวิชาวิทยาการคอมพิวเตอร์ คณะวิทยาศาสตร์ มหาวิทยาลัยแม่โจ้
-            </p>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-3">
-            <button
-              onClick={() => setIsSubmitModalOpen(true)}
-              className="px-5 py-3 bg-white hover:bg-blue-50 active:scale-95 text-blue-700 rounded-2xl text-xs font-bold transition-all duration-200 shadow-lg hover:shadow-blue-500/25 inline-flex items-center gap-2 cursor-pointer"
-            >
-              <span>+ ยื่นขอชั่วโมงกิจกรรม</span>
-            </button>
-          </div>
-        </div>
-      </div>
+      <PageBanner
+        eyebrow="นักศึกษา รหัส 67"
+        title="นางสาวพัฒน์นรี วันพิลา"
+        subtitle="สาขาวิชาวิทยาการคอมพิวเตอร์ คณะวิทยาศาสตร์ มหาวิทยาลัยแม่โจ้"
+        actions={
+          <button onClick={() => setIsSubmitModalOpen(true)} className={bannerButtonClass}>
+            <span className="text-lg leading-none">+</span>
+            <span>ยื่นขอชั่วโมงกิจกรรม</span>
+          </button>
+        }
+      />
 
       {/* 2. สรุปชั่วโมง */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* การ์ด 1: สหกิจศึกษา */}
-        <div className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-50 via-white to-cyan-50 p-5 border border-blue-200 shadow-sm transition-all duration-300 ease-out hover:-translate-y-2 hover:shadow-xl hover:border-blue-300 hover:bg-gradient-to-b hover:from-white hover:to-blue-50/40 active:scale-98 flex flex-col justify-between cursor-pointer">
+        <div className="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-200 border-t-4 border-t-blue-600 bg-white p-5 shadow-csmju-sm transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-csmju-md">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-blue-600 uppercase tracking-wider group-hover:text-blue-700 transition-colors">
+            <span className="text-xs font-bold text-blue-600 group-hover:text-blue-700 transition-colors">
               ชั่วโมงวิชาชีพ / สหกิจ (สาขา)
             </span>
             {coopHoursEarned >= coopTarget ? (
@@ -296,7 +284,7 @@ export default function StudentDashboardPage() {
             )}
           </div>
           <div className="my-2.5">
-            <span className="text-3xl font-black text-slate-800 group-hover:text-blue-900 transition-colors">
+            <span className="font-heading text-4xl font-extrabold text-slate-900">
               {coopHoursEarned}
             </span>
             <span className="text-xs font-bold text-slate-400 ml-1.5">/ {coopTarget} ชม. ขั้นต่ำ</span>
@@ -312,9 +300,9 @@ export default function StudentDashboardPage() {
         </div>
 
         {/* การ์ด 2: จิตอาสา */}
-        <div className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-50 via-white to-cyan-50 p-5 border border-blue-200 shadow-sm transition-all duration-300 ease-out hover:-translate-y-2 hover:shadow-xl hover:border-emerald-400 hover:bg-gradient-to-br hover:from-emerald-50 hover:via-white hover:to-teal-50 active:scale-98 flex flex-col justify-between cursor-pointer">
+        <div className="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-200 border-t-4 border-t-emerald-500 bg-white p-5 shadow-csmju-sm transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-csmju-md">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-emerald-600 uppercase tracking-wider group-hover:text-emerald-700 transition-colors">
+            <span className="text-xs font-bold text-emerald-600 group-hover:text-emerald-700 transition-colors">
               ชั่วโมงจิตอาสา
             </span>
             <span className="text-xs text-emerald-400 group-hover:scale-125 group-hover:rotate-12 transition-transform duration-300">
@@ -322,7 +310,7 @@ export default function StudentDashboardPage() {
             </span>
           </div>
           <div className="my-2.5">
-            <span className="text-3xl font-black text-slate-800 group-hover:text-emerald-800 transition-colors">
+            <span className="font-heading text-4xl font-extrabold text-slate-900">
               {volunteerHoursEarned}
             </span>
             <span className="text-xs font-bold text-slate-400 ml-1.5">ชม. สะสม</span>
@@ -333,9 +321,9 @@ export default function StudentDashboardPage() {
         </div>
 
         {/* การ์ด 3: กำหนดการฝึกงาน รหัส 67 */}
-        <div className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-50 via-white to-cyan-50 p-5 border border-blue-200 shadow-sm transition-all duration-300 ease-out hover:-translate-y-2 hover:shadow-xl hover:border-amber-400 hover:bg-gradient-to-br hover:from-amber-50 hover:via-white hover:to-orange-50 active:scale-98 flex flex-col justify-between cursor-pointer">
+        <div className="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-200 border-t-4 border-t-amber-500 bg-white p-5 shadow-csmju-sm transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-csmju-md">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-amber-600 uppercase tracking-wider group-hover:text-amber-700 transition-colors">
+            <span className="text-xs font-bold text-amber-600 group-hover:text-amber-700 transition-colors">
               กำหนดการฝึกงาน รหัส 67
             </span>
             <span className="text-xs text-amber-400 group-hover:scale-125 transition-transform duration-300">
@@ -358,9 +346,9 @@ export default function StudentDashboardPage() {
         </div>
 
         {/* การ์ด 4: นับถอยหลังสู่วันฝึกงาน */}
-        <div className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-50 via-white to-cyan-50 p-5 border border-blue-200 shadow-sm transition-all duration-300 ease-out hover:-translate-y-2 hover:shadow-xl hover:border-indigo-400 hover:bg-gradient-to-br hover:from-indigo-50 hover:via-white hover:to-violet-50 active:scale-98 flex flex-col justify-between cursor-pointer">
+        <div className="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-200 border-t-4 border-t-sky-500 bg-white p-5 shadow-csmju-sm transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-csmju-md">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-indigo-600 uppercase tracking-wider group-hover:text-indigo-700 transition-colors">
+            <span className="text-xs font-bold text-indigo-600 group-hover:text-indigo-700 transition-colors">
               นับถอยหลังสู่วันฝึกงาน
             </span>
             <span className="text-xs text-indigo-400 group-hover:scale-125 group-hover:-rotate-12 transition-transform duration-300">
@@ -368,7 +356,7 @@ export default function StudentDashboardPage() {
             </span>
           </div>
           <div className="my-2.5 flex items-baseline gap-1.5">
-            <span className="text-3xl font-black text-indigo-600 group-hover:text-indigo-700 group-hover:scale-105 transition-all">
+            <span className="font-heading text-4xl font-extrabold text-blue-700">
               {countdownInternship.days}
             </span>
             <span className="text-xs font-bold text-slate-400">วัน</span>
@@ -380,7 +368,7 @@ export default function StudentDashboardPage() {
       </div>
 
       {/* 3. กิจกรรมของหลักสูตรที่เปิดรับสมัคร */}
-      <div className="rounded-3xl bg-white p-6 border border-blue-100 shadow-sm space-y-4">
+      <div className="rounded-3xl bg-white p-6 border border-slate-200 shadow-csmju-sm space-y-4">
         <div className="flex items-center justify-between pb-3 border-b border-slate-100">
           <div>
             <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
@@ -498,9 +486,9 @@ export default function StudentDashboardPage() {
       {/* 4. ตารางปฏิทินและประวัติรายการที่ยื่น */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
         {/* ปฏิทิน */}
-        <div className="lg:col-span-5 rounded-3xl bg-white p-6 border border-blue-100 shadow-sm space-y-4 transition-all duration-300 hover:shadow-md">
+        <div className="lg:col-span-5 rounded-3xl bg-white p-6 border border-slate-200 shadow-csmju-sm space-y-4 transition-all duration-300 hover:shadow-md">
           <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-            <h2 className="text-sm font-bold text-slate-800 uppercase">ปฏิทินการฝึกงาน</h2>
+            <h2 className="text-base font-bold text-slate-900">ปฏิทินการฝึกงาน</h2>
             <span className="text-xs text-slate-500">{THAI_MONTHS[viewMonth]} {viewYear + 543}</span>
           </div>
           <div className="grid grid-cols-7 gap-1 text-center text-xs">
@@ -530,9 +518,9 @@ export default function StudentDashboardPage() {
         </div>
 
         {/* ประวัติกิจกรรมของฉัน */}
-        <div className="lg:col-span-7 rounded-3xl bg-white p-6 border border-blue-100 shadow-sm space-y-4 transition-all duration-300 hover:shadow-md">
+        <div className="lg:col-span-7 rounded-3xl bg-white p-6 border border-slate-200 shadow-csmju-sm space-y-4 transition-all duration-300 hover:shadow-md">
           <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-            <h2 className="text-sm font-bold text-slate-800 uppercase">ประวัติกิจกรรมของฉัน ({activities.length})</h2>
+            <h2 className="text-base font-bold text-slate-900">ประวัติกิจกรรมของฉัน ({activities.length})</h2>
             <button
               onClick={() => setIsSubmitModalOpen(true)}
               className="text-xs font-bold text-blue-600 hover:text-blue-700 hover:underline transition-colors cursor-pointer"

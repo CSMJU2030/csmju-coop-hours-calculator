@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { PageBanner, bannerButtonClass } from '@/components/PageBanner';
 import { requireIdentity } from '@/lib/auth';
 import { listMyHourRequests } from '@/lib/services/hourRequest';
 import { RequestHistoryTable } from '@/components/RequestHistoryTable';
@@ -11,15 +12,18 @@ export default async function MyRequestsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-primary-dark">ประวัติคำร้องขอชั่วโมง</h1>
-          <p className="text-sm text-slate-500">รายการคำร้องทั้งหมดที่คุณเคยยื่น</p>
-        </div>
-        <Link href="/requests/new" className="btn-primary">
-          + ยื่นขอชั่วโมงกิจกรรม
-        </Link>
-      </div>
+      <PageBanner
+        compact
+        eyebrow="นักศึกษา"
+        title="ประวัติคำร้องขอชั่วโมง"
+        subtitle="รายการคำร้องทั้งหมดที่คุณเคยยื่น"
+        actions={
+          <Link href="/requests/new" className={bannerButtonClass}>
+            <span className="text-lg leading-none">+</span>
+            <span>ยื่นขอชั่วโมงกิจกรรม</span>
+          </Link>
+        }
+      />
 
       <RequestHistoryTable requests={requests} />
     </div>
