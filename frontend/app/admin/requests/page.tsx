@@ -78,7 +78,7 @@ export default function AdminRequestsPage() {
     }
 
     try {
-      await fetch('/api/admin/requests', {
+      const res = await fetch('/api/admin/requests', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -89,25 +89,20 @@ export default function AdminRequestsPage() {
           rejectReason: status === 'REJECTED' ? rejectReason : '',
         }),
       });
+      const result = await res.json().catch(() => null);
+      if (!res.ok || result?.success === false) {
+        // ห้ามบอกว่าสำเร็จเมื่อ backend ปฏิเสธ — ค้างหน้าต่างไว้ให้อาจารย์ลองใหม่
+        alert(result?.error ?? 'บันทึกผลการตรวจไม่สำเร็จ กรุณาลองใหม่อีกครั้ง');
+        return;
+      }
     } catch (e) {
       console.error('API update failed:', e);
+      alert('ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้ ผลการตรวจยังไม่ถูกบันทึก');
+      return;
     }
 
-    const updated = requests.map((req) => {
-      if (req.id === selectedItem.id) {
-        return {
-          ...req,
-          approvedHours: Number(editHours),
-          status: status,
-          statusText: status === 'APPROVED' ? 'อนุมัติแล้ว' : 'ไม่อนุมัติ',
-          approvedCategory: status === 'APPROVED' ? editCategory : undefined,
-          reason: status === 'REJECTED' ? rejectReason : '',
-        };
-      }
-      return req;
-    });
-
-    setRequests(updated);
+    // แสดงผลตามที่ระบบบันทึกจริง ไม่เดาเองบนหน้าจอ
+    await loadData();
     setSelectedItem(null);
     window.dispatchEvent(new Event('csmju_hours_updated'));
 
@@ -215,7 +210,7 @@ export default function AdminRequestsPage() {
                           onClick={() => openReviewModal(item)}
                           className="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-[11px] font-bold transition cursor-pointer shadow-xs"
                         >
-                          ตรวจสอบ
+                          {isApproved || isRejected ? 'แก้ไขผลตรวจ' : 'ตรวจสอบ'}
                         </button>
                        
                       </div>
@@ -240,7 +235,11 @@ export default function AdminRequestsPage() {
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl max-w-lg w-full p-6 space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center border-b border-slate-100 pb-3">
-              <h3 className="font-bold text-slate-900 text-base">📝 พิจารณาคำร้องขอชั่วโมง</h3>
+              <h3 className="font-bold text-slate-900 text-base">
+                {selectedItem.status === 'APPROVED' || selectedItem.status === 'REJECTED'
+                  ? '✏️ แก้ไขผลการตรวจ'
+                  : '📝 พิจารณาคำร้องขอชั่วโมง'}
+              </h3>
               <button
                 type="button"
                 onClick={() => setSelectedItem(null)}
