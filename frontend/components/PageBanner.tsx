@@ -25,32 +25,32 @@ export function PageBanner({ title, subtitle, eyebrow, actions, footer, compact 
       }`}
       style={{
         background:
-          'radial-gradient(120% 140% at 100% 0%, #1f66b0 0%, rgba(31,102,176,0) 55%), linear-gradient(135deg, #002e5c 0%, #004c99 60%, #0a5fb8 100%)',
+          'radial-gradient(120% 140% at 100% 0%, color-mix(in srgb, var(--csmju-color-focus-ring) 38%, transparent) 0%, transparent 55%), linear-gradient(135deg, var(--csmju-color-primary-active) 0%, var(--csmju-color-primary) 70%, var(--csmju-color-primary-hover) 100%)',
       }}
     >
       {/* ลวดลายวงแหวน — อ้างอิงโลโก้ภาควิชา */}
       <svg
         aria-hidden="true"
-        className="pointer-events-none absolute -right-16 -top-24 -z-10 h-[420px] w-[420px] opacity-[0.18] md:-right-10"
+        className="pointer-events-none absolute -right-16 -top-24 -z-10 text-white h-[420px] w-[420px] opacity-[0.18] md:-right-10"
         viewBox="0 0 400 400"
         fill="none"
       >
-        <circle cx="200" cy="200" r="190" stroke="#fff" strokeWidth="1.5" />
-        <circle cx="200" cy="200" r="150" stroke="#fff" strokeWidth="1.5" />
-        <circle cx="200" cy="200" r="110" stroke="#fff" strokeWidth="1.5" />
-        <circle cx="200" cy="200" r="70" stroke="#fff" strokeWidth="1.5" />
-        <circle cx="200" cy="200" r="30" fill="#fff" fillOpacity="0.35" />
+        <circle cx="200" cy="200" r="190" stroke="currentColor" strokeWidth="1.5" />
+        <circle cx="200" cy="200" r="150" stroke="currentColor" strokeWidth="1.5" />
+        <circle cx="200" cy="200" r="110" stroke="currentColor" strokeWidth="1.5" />
+        <circle cx="200" cy="200" r="70" stroke="currentColor" strokeWidth="1.5" />
+        <circle cx="200" cy="200" r="30" fill="currentColor" fillOpacity="0.35" />
       </svg>
 
       {/* จุดตาราง */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 -z-10 opacity-[0.12]"
+        className="pointer-events-none absolute inset-0 -z-10 text-white opacity-[0.12]"
         style={{
-          backgroundImage: 'radial-gradient(#fff 1px, transparent 1px)',
+          backgroundImage: 'radial-gradient(currentColor 1px, transparent 1px)',
           backgroundSize: '22px 22px',
-          maskImage: 'linear-gradient(90deg, transparent 0%, #000 70%)',
-          WebkitMaskImage: 'linear-gradient(90deg, transparent 0%, #000 70%)',
+          maskImage: 'linear-gradient(90deg, transparent 0%, black 70%)',
+          WebkitMaskImage: 'linear-gradient(90deg, transparent 0%, black 70%)',
         }}
       />
 
