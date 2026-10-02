@@ -53,21 +53,11 @@ export default function AdminRequestsPage() {
         }
       }
     } catch (err) {
-      console.warn('API fetch failed, fallback to local storage:', err);
+      console.warn('API fetch failed:', err);
     }
 
-    // Fallback โหมด LocalStorage สำหรับสำรองข้อมูล
-    const saved = localStorage.getItem('csmju_shared_activities');
-    if (saved) {
-      try {
-        setRequests(JSON.parse(saved));
-      } catch (e) {
-        console.error(e);
-      }
-    } else {
-      // ไม่มีข้อมูลสำรอง: ดึงจากระบบไม่ได้ก็แสดงรายการว่าง ไม่แสดงข้อมูลตัวอย่าง
-      setRequests([]);
-    }
+    // ดึงจากระบบไม่ได้ก็แสดงรายการว่าง ไม่มีข้อมูลสำรองหรือข้อมูลตัวอย่างในเบราว์เซอร์
+    setRequests([]);
   };
 
   const openReviewModal = (item: ActivityItem) => {
@@ -117,7 +107,6 @@ export default function AdminRequestsPage() {
       return req;
     });
 
-    localStorage.setItem('csmju_shared_activities', JSON.stringify(updated));
     setRequests(updated);
     setSelectedItem(null);
     window.dispatchEvent(new Event('csmju_hours_updated'));
