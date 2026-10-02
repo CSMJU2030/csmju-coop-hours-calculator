@@ -6,7 +6,8 @@ import { SubsystemRole } from './core-hub-identity';
  *   Core Hub Role      Subsystem Role
  *   ---------------------------------
  *   student            STUDENT
- *   staff              STAFF    (อาจารย์/เจ้าหน้าที่ — ตรวจคำร้อง จัดกิจกรรม)
+ *   staff              STAFF    (เจ้าหน้าที่ — ตรวจคำร้อง จัดกิจกรรม)
+ *   lecturer           STAFF    (อาจารย์ — standards 1.0.6 / 1.6.0)
  *   admin              ADMIN
  *   alumni             (ไม่มีสิทธิ์ในระบบนี้ → 403)
  *
@@ -16,6 +17,7 @@ import { SubsystemRole } from './core-hub-identity';
 export const CORE_ROLE_TO_SUBSYSTEM_ROLE: Readonly<Record<string, SubsystemRole>> = Object.freeze({
   student: SubsystemRole.STUDENT,
   staff: SubsystemRole.STAFF,
+  lecturer: SubsystemRole.STAFF,
   admin: SubsystemRole.ADMIN,
 });
 

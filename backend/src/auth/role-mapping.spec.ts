@@ -5,6 +5,7 @@ describe('Core role -> subsystem role mapping (authorization.md ข้อ 3)', (
   it.each([
     ['student', SubsystemRole.STUDENT],
     ['staff', SubsystemRole.STAFF],
+    ['lecturer', SubsystemRole.STAFF],
     ['admin', SubsystemRole.ADMIN],
   ])('maps core role "%s" to %s', (coreRole, expected) => {
     expect(mapCoreRoleToSubsystemRole(coreRole)).toBe(expected);
@@ -24,6 +25,11 @@ describe('Core role -> subsystem role mapping (authorization.md ข้อ 3)', (
   });
 
   it('matches default_role_mapping declared in subsystem.yaml', () => {
-    expect(CORE_ROLE_TO_SUBSYSTEM_ROLE).toEqual({ student: 'STUDENT', staff: 'STAFF', admin: 'ADMIN' });
+    expect(CORE_ROLE_TO_SUBSYSTEM_ROLE).toEqual({
+      student: 'STUDENT',
+      staff: 'STAFF',
+      lecturer: 'STAFF',
+      admin: 'ADMIN',
+    });
   });
 });
