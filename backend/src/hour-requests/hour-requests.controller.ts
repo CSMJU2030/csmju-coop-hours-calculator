@@ -1,5 +1,6 @@
 import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Patch, Post, Query } from '@nestjs/common';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { CoreHubAccessToken } from '../auth/decorators/core-hub-access-token.decorator';
 import { RequirePermissions } from '../auth/decorators/require-permissions.decorator';
 import { CoreHubIdentity } from '../auth/core-hub-identity';
 import { Permission } from '../auth/permissions';
@@ -23,8 +24,8 @@ export class HourRequestsController {
 
   @Get()
   @RequirePermissions(Permission.HOUR_REQUEST_READ_ANY)
-  async listForReview(@Query() query: QueryHourRequestsDto) {
-    const { items, total } = await this.hourRequests.listForReview(query);
+  async listForReview(@Query() query: QueryHourRequestsDto, @CoreHubAccessToken() token: string) {
+    const { items, total } = await this.hourRequests.listForReview(query, token);
     return new CollectionResult(items, buildPaginationMeta(total, query.page ?? 1, query.take));
   }
 
@@ -36,8 +37,12 @@ export class HourRequestsController {
 
   @Post()
   @RequirePermissions(Permission.HOUR_REQUEST_CREATE_OWN)
-  create(@Body() dto: CreateHourRequestDto, @CurrentUser() user: CoreHubIdentity) {
-    return this.hourRequests.create(user, dto);
+  create(
+    @Body() dto: CreateHourRequestDto,
+    @CurrentUser() user: CoreHubIdentity,
+    @CoreHubAccessToken() token: string,
+  ) {
+    return this.hourRequests.create(user, dto, token);
   }
 
   @Patch(':id')

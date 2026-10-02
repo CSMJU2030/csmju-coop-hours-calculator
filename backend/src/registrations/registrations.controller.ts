@@ -1,5 +1,6 @@
 import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Post } from '@nestjs/common';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { CoreHubAccessToken } from '../auth/decorators/core-hub-access-token.decorator';
 import { RequirePermissions } from '../auth/decorators/require-permissions.decorator';
 import { CoreHubIdentity, SubsystemRole } from '../auth/core-hub-identity';
 import { Permission } from '../auth/permissions';
@@ -19,8 +20,12 @@ export class RegistrationsController {
 
   @Post()
   @RequirePermissions(Permission.PARTICIPATION_CREATE_OWN)
-  register(@Body() dto: CreateRegistrationDto, @CurrentUser() user: CoreHubIdentity) {
-    return this.registrations.register(user, dto.activityId);
+  register(
+    @Body() dto: CreateRegistrationDto,
+    @CurrentUser() user: CoreHubIdentity,
+    @CoreHubAccessToken() token: string,
+  ) {
+    return this.registrations.register(user, dto.activityId, token);
   }
 
   @Delete(':id')

@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { HourRequestCategory, HourRequestStatus } from '../../generated/prisma/client';
 import { AppException } from '../common/errors';
+import { PeopleService } from '../core-hub/people.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { ProfileService } from '../users/profile.service';
 import { CoreHubIdentity } from '../auth/core-hub-identity';
@@ -18,6 +19,7 @@ export class HourRequestsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly profiles: ProfileService,
+    private readonly people: PeopleService,
   ) {}
 
   async listMine(coreUserId: string) {
@@ -27,18 +29,35 @@ export class HourRequestsService {
     });
   }
 
-  async listForReview(query: QueryHourRequestsDto) {
+  /**
+   * คำร้องทั้งหมดสำหรับอาจารย์ — ชื่อนักศึกษาดึงจาก Core Hub ด้วย token ของอาจารย์ตอนแสดงผล
+   * (ไม่ได้เก็บในฐานข้อมูล) หาชื่อไม่เจอก็แสดงแค่รหัส หน้ารายการจะไม่พัง
+   */
+  async listForReview(query: QueryHourRequestsDto, token: string) {
     const where = query.status ? { status: query.status as HourRequestStatus } : {};
-    const [items, total] = await this.prisma.$transaction([
-      this.prisma.hourRequest.findMany({
-        where,
-        include: { userProfile: { select: { displayName: true, fullName: true, studentCode: true } } },
-        orderBy: { createdAt: 'asc' },
-        skip: query.skip,
-        take: query.take,
-      }),
-      this.prisma.hourRequest.count({ where }),
+    const [[rows, total], directory] = await Promise.all([
+      this.prisma.$transaction([
+        this.prisma.hourRequest.findMany({
+          where,
+          orderBy: { createdAt: 'asc' },
+          skip: query.skip,
+          take: query.take,
+        }),
+        this.prisma.hourRequest.count({ where }),
+      ]),
+      this.people.studentDirectory(token),
     ]);
+
+    const items = rows.map((row) => {
+      const name = row.personCode ? directory.get(row.personCode)?.fullNameTh : undefined;
+      return {
+        ...row,
+        // field ที่หน้าจอเดิมอ่าน — คำนวณตอนตอบ ไม่ได้เก็บ
+        studentCode: row.personCode,
+        studentName: name ?? row.personCode ?? '',
+        userProfile: { displayName: name ?? null, fullName: name ?? null, studentCode: row.personCode },
+      };
+    });
     return { items, total };
   }
 
@@ -49,13 +68,12 @@ export class HourRequestsService {
     return request;
   }
 
-  async create(user: CoreHubIdentity, dto: CreateHourRequestDto) {
-    const profile = await this.profiles.ensure(user);
+  async create(user: CoreHubIdentity, dto: CreateHourRequestDto, token: string) {
+    const profile = await this.profiles.ensure(user, token);
     return this.prisma.hourRequest.create({
       data: {
         coreUserId: user.id,
-        studentCode: profile.studentCode ?? undefined,
-        studentName: profile.displayName ?? profile.fullName ?? user.email,
+        personCode: profile.personCode ?? undefined,
         title: dto.title.trim(),
         category: parseCategory(dto.category),
         hours: dto.hours,
