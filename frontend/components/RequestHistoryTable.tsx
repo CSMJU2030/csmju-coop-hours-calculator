@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import type { HourRequest } from '@/lib/types';
 import RequestStatusBadge from '@/components/RequestStatusBadge';
@@ -13,37 +13,8 @@ const CATEGORY_LABEL: Record<string, string> = {
 };
 
 export function RequestHistoryTable({ requests: initialRequests }: { requests: HourRequest[] }) {
-  const [displayRequests, setDisplayRequests] = useState<any[]>(initialRequests || []);
+  const displayRequests = initialRequests || [];
   const [selectedProof, setSelectedProof] = useState<string | null>(null);
-
-  useEffect(() => {
-    const saved = localStorage.getItem('csmju_shared_activities');
-    if (saved) {
-      try {
-        const localList = JSON.parse(saved);
-        if (Array.isArray(localList) && localList.length > 0) {
-          const formattedLocal = localList.map((item: any) => ({
-            id: item.id || String(Math.random()),
-            title: item.title,
-            description: item.note || '',
-            category: item.type || 'กิจกรรมภายนอก (คอมพิวเตอร์)',
-            hours: item.hours || 0,
-            proofUrl: item.imageProof || null,
-            status: item.status || 'PENDING_APPROVAL',
-            rejectionReason: item.reason || null,
-            createdAt: item.dateStr || 'ล่าสุด',
-          }));
-
-          setDisplayRequests(formattedLocal);
-          return;
-        }
-      } catch (e) {
-        console.error('Error parsing csmju_shared_activities:', e);
-      }
-    }
-
-    setDisplayRequests(initialRequests || []);
-  }, [initialRequests]);
 
   return (
     <div className="card overflow-hidden">
@@ -61,7 +32,7 @@ export function RequestHistoryTable({ requests: initialRequests }: { requests: H
         </thead>
         <tbody className="divide-y divide-slate-100">
           {displayRequests.map((r) => {
-            const isRejected = r.status === 'REJECTED' || r.status === 'ไม่อนุมัติ';
+            const isRejected = r.status === 'REJECTED';
 
             return (
               <tr key={r.id}>
