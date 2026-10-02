@@ -24,7 +24,7 @@ interface ApiActivity {
 
 export async function GET() {
   try {
-    const activities = await apiFetch<ApiActivity[]>('/activities?page=1&limit=200');
+    const activities = await apiFetch<ApiActivity[]>('/activities?page=1&limit=100');
     return NextResponse.json({ success: true, activities });
   } catch (error) {
     // หน้า list เดิมคาดหวัง activities:[] เสมอเมื่อพลาด จึงไม่โยน error ออกไป

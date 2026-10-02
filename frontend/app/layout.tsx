@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import './globals.css';
 import { NavBar } from '@/components/NavBar';
 import { getIdentityOrNull } from '@/lib/auth';
+import { getMyProfileOrNull } from '@/lib/api';
 
 export const metadata: Metadata = {
   title: 'ระบบติดตามชั่วโมงสหกิจและกิจกรรม | CSMJU2030',
@@ -15,11 +16,13 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
   // เลยเห็นชื่อปลอม hardcode ตลอด) — ใช้ getIdentityOrNull ไม่ใช่ requireIdentity
   // เพื่อไม่เปลี่ยนพฤติกรรมเดิมที่หน้า /dashboard ยอมให้ render แม้ยังไม่ login
   const identity = await getIdentityOrNull();
+  // ชื่อที่แสดงมาจาก Core Hub (ไม่ได้เก็บในฐานข้อมูลของระบบนี้) — ดึงไม่ได้ก็ใช้อีเมลแทน
+  const profile = identity ? await getMyProfileOrNull() : null;
 
   return (
     <html lang="th">
       <body>
-        <NavBar userId={identity?.email} isAdmin={identity?.subsystemRole === 'admin'} />
+        <NavBar userId={profile?.displayName ?? identity?.email} isAdmin={identity?.subsystemRole === 'admin'} />
 
         <main className="min-h-[calc(100vh-76px)] lg:ml-[250px]">
           <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">

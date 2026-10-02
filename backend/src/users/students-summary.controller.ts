@@ -1,4 +1,5 @@
 import { Controller, Get } from '@nestjs/common';
+import { CoreHubAccessToken } from '../auth/decorators/core-hub-access-token.decorator';
 import { RequirePermissions } from '../auth/decorators/require-permissions.decorator';
 import { Permission } from '../auth/permissions';
 import { CollectionResult } from '../common/api-response';
@@ -11,8 +12,8 @@ export class StudentsSummaryController {
 
   @Get('summary')
   @RequirePermissions(Permission.HOUR_SUMMARY_READ_ANY)
-  async summary() {
-    const items = await this.profiles.listStudentsSummary();
+  async summary(@CoreHubAccessToken() token: string) {
+    const items = await this.profiles.listStudentsSummary(token);
     return new CollectionResult(items, { total: items.length });
   }
 }

@@ -83,7 +83,7 @@ export async function listMyHourRequests(_coreUserId?: string): Promise<HourRequ
 }
 
 export async function listPendingHourRequests(): Promise<HourRequest[]> {
-  return apiFetch<HourRequest[]>(`/hour-requests?status=${HourRequestStatus.PENDING}&page=1&limit=200`).catch(
+  return apiFetch<HourRequest[]>(`/hour-requests?status=${HourRequestStatus.PENDING}&page=1&limit=100`).catch(
     translate,
   );
 }

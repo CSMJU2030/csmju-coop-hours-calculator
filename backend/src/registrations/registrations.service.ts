@@ -6,7 +6,8 @@ import {
 } from '../../generated/prisma/client';
 import { AppException } from '../common/errors';
 import { PrismaService } from '../prisma/prisma.service';
-import { ProfileService } from '../users/profile.service';
+import { PeopleService } from '../core-hub/people.service';
+import { ProfileService, yearLevelFromEntryYear } from '../users/profile.service';
 import { CoreHubIdentity } from '../auth/core-hub-identity';
 
 const MAX_WAITLIST_SIZE = 5;
@@ -16,6 +17,7 @@ export class RegistrationsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly profiles: ProfileService,
+    private readonly people: PeopleService,
   ) {}
 
   async listMine(coreUserId: string) {
@@ -27,8 +29,8 @@ export class RegistrationsService {
   }
 
   /** นักศึกษาลงทะเบียนตัวเอง — กันชนกันด้วย Serializable transaction + waitlist */
-  async register(user: CoreHubIdentity, activityId: string) {
-    await this.profiles.ensure(user);
+  async register(user: CoreHubIdentity, activityId: string, token: string) {
+    await this.profiles.ensure(user, token);
 
     return this.prisma.$transaction(
       async (tx) => {
@@ -138,14 +140,31 @@ export class RegistrationsService {
   }
 
   /** รายชื่อสำหรับหน้ายืนยันการเข้าร่วม (อาจารย์) */
-  async roster(activityId: string) {
+  async roster(activityId: string, token: string) {
     const activity = await this.prisma.activity.findUnique({ where: { id: activityId } });
     if (!activity) throw AppException.notFound('ไม่พบกิจกรรมนี้ในระบบ');
 
-    const registrations = await this.prisma.registration.findMany({
-      where: { activityId, status: { not: RegistrationStatus.CANCELLED } },
-      include: { userProfile: { select: { displayName: true, fullName: true, major: true, yearLevel: true } } },
-      orderBy: [{ status: 'asc' }, { queueNumber: 'asc' }, { registeredAt: 'asc' }],
+    const [rows, directory] = await Promise.all([
+      this.prisma.registration.findMany({
+        where: { activityId, status: { not: RegistrationStatus.CANCELLED } },
+        include: { userProfile: { select: { personCode: true } } },
+        orderBy: [{ status: 'asc' }, { queueNumber: 'asc' }, { registeredAt: 'asc' }],
+      }),
+      // ชื่อนักศึกษาดึงจาก Core Hub ด้วย token ของอาจารย์ตอนแสดงผล ไม่ได้เก็บในฐานข้อมูล
+      this.people.studentDirectory(token),
+    ]);
+
+    const registrations = rows.map((row) => {
+      const person = row.userProfile?.personCode ? directory.get(row.userProfile.personCode) : undefined;
+      return {
+        ...row,
+        userProfile: {
+          displayName: person?.fullNameTh ?? null,
+          fullName: person?.fullNameTh ?? null,
+          major: person?.departmentNameTh ?? null,
+          yearLevel: yearLevelFromEntryYear(person?.entryYear ?? null),
+        },
+      };
     });
 
     const seated = registrations.filter((r) =>

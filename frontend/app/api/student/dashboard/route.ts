@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { ApiError, UnauthenticatedError, apiFetch } from '@/lib/api';
+import { ApiError, UnauthenticatedError, apiFetch, getMyProfileOrNull } from '@/lib/api';
 
 /** ใช้คุกกี้ผู้ใช้ จึง prerender ตอน build ไม่ได้ */
 export const dynamic = 'force-dynamic';
@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic';
 /**
  * ข้อมูลตั้งต้นของหน้า dashboard นักศึกษา
  *
- * เดิม route นี้อ่านฐานข้อมูลตรง ๆ และใช้รหัสนักศึกษาที่ hardcode ไว้ ('6704101359')
+ * เดิม route นี้อ่านฐานข้อมูลตรง ๆ และใช้รหัสนักศึกษาที่ hardcode ไว้ (ค่าคงที่)
  * ทำให้ทุกคนเห็นข้อมูลของคนคนเดียวกัน ตอนนี้ยิงไป backend ซึ่งรู้ว่าใครเรียกจาก token
  * รูปแบบข้อมูลที่ส่งกลับไปให้หน้าเว็บยังเหมือนเดิมทุก field หน้า dashboard จึงไม่ต้องแก้
  */
@@ -45,7 +45,10 @@ interface DashboardPayload {
 
 export async function GET() {
   try {
-    const dashboard = await apiFetch<DashboardPayload>('/me/dashboard');
+    const [dashboard, profile] = await Promise.all([
+      apiFetch<DashboardPayload>('/me/dashboard'),
+      getMyProfileOrNull(),
+    ]);
 
     const activities = dashboard.hourRequests.map((req) => ({
       id: req.id,
@@ -91,6 +94,7 @@ export async function GET() {
       activities,
       publishedList,
       registeredIds: dashboard.registeredActivityIds,
+      student: { displayName: profile?.displayName ?? null, personCode: profile?.personCode ?? null },
     });
   } catch (error) {
     if (error instanceof UnauthenticatedError) {

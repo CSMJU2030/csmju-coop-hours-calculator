@@ -1,3 +1,4 @@
+import { CoreHubAccessToken } from '../auth/decorators/core-hub-access-token.decorator';
 import { Body, Controller, Get, Param, ParseUUIDPipe, Post } from '@nestjs/common';
 import { RequirePermissions } from '../auth/decorators/require-permissions.decorator';
 import { Permission } from '../auth/permissions';
@@ -11,8 +12,8 @@ export class AttendanceController {
 
   @Get()
   @RequirePermissions(Permission.ATTENDANCE_READ_ANY)
-  roster(@Param('id', ParseUUIDPipe) id: string) {
-    return this.registrations.roster(id);
+  roster(@Param('id', ParseUUIDPipe) id: string, @CoreHubAccessToken() token: string) {
+    return this.registrations.roster(id, token);
   }
 
   @Post()

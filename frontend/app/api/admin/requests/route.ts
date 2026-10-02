@@ -22,7 +22,7 @@ interface ApiHourRequest {
 
 export async function GET() {
   try {
-    const requests = await apiFetch<ApiHourRequest[]>('/hour-requests?page=1&limit=200');
+    const requests = await apiFetch<ApiHourRequest[]>('/hour-requests?page=1&limit=100');
 
     const withProfile = requests.map((req) => {
       const profile = {

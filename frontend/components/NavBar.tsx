@@ -15,8 +15,7 @@ export function NavBar({
   const pathname = usePathname();
   const isTeacherPage = isAdmin || pathname.startsWith('/admin');
 
-  const displayName =
-    userId ?? (isTeacherPage ? 'ผศ.-dr.กมลวรรณ ศรีวิไล' : 'นางสาวพัฒน์นรี วันพิลา');
+  const displayName = userId ?? 'ผู้ใช้งาน';
 
   const roleText = isTeacherPage ? 'อาจารย์' : 'นักศึกษา';
   const badgeLetter = isTeacherPage ? 'T' : 'S';

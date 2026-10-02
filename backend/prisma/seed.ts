@@ -23,11 +23,8 @@ async function main() {
     create: {
       coreUserId: STUDENT_CORE_USER_ID,
       coreRole: 'student',
-      studentCode: '6512345678', // username เดิมก่อนย้ายมาตรฐาน — เก็บไว้เป็นข้อมูลธุรกิจ
-      fullName: 'สมชาย ใจดี',
-      displayName: 'สมชาย ใจดี',
-      major: 'วิทยาการคอมพิวเตอร์',
-      yearLevel: 3,
+      // รหัสตัวอย่างสำหรับทดสอบในเครื่อง — ชื่อ/สาขา/ชั้นปีไม่เก็บ ดึงจาก Core Hub ตอนแสดงผล (reference-data.md ข้อ 8)
+      personCode: '0000000000',
     },
   });
 
@@ -37,8 +34,6 @@ async function main() {
     create: {
       coreUserId: STAFF_CORE_USER_ID,
       coreRole: 'staff',
-      fullName: 'อาจารย์วิภาวี ศรีสุข',
-      displayName: 'อาจารย์วิภาวี ศรีสุข',
     },
   });
 
@@ -63,7 +58,7 @@ async function main() {
       registrationDeadline: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000),
       registrationClose: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000),
       capacity: 3,
-      lecturerInCharge: 'อาจารย์วิภาวี ศรีสุข',
+      lecturerInCharge: 'อาจารย์ผู้รับผิดชอบ (ตัวอย่าง)',
       coopHours: 4,
       volunteerHours: 4,
       majorHours: 0,
