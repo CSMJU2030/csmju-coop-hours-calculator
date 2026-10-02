@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { PageBanner } from '@/components/PageBanner';
 
 interface ActivityItem {
   id: string;
@@ -156,14 +157,12 @@ export default function AdminRequestsPage() {
   return (
     <div className="max-w-7xl mx-auto p-6 space-y-6">
       {/* ส่วนหัวหน้าของอาจารย์ */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-200 gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">ตรวจสอบและอนุมัติคำร้องขอชั่วโมง</h1>
-          <p className="text-xs text-slate-500 mt-1">
-            พิจารณาและกำหนดหมวดหมู่ชั่วโมง (สหกิจศึกษา / จิตอาสา) ให้แก่นักศึกษาจากระบบฐานข้อมูล
-          </p>
-        </div>
-      </div>
+      <PageBanner
+        compact
+        title="ตรวจสอบและอนุมัติคำร้องขอชั่วโมง"
+        subtitle="พิจารณาและกำหนดหมวดหมู่ชั่วโมง (สหกิจศึกษา / จิตอาสา) ให้แก่นักศึกษาจากระบบฐานข้อมูล"
+        eyebrow="อาจารย์"
+      />
 
       {/* ตารางแสดงผลรายการคำร้อง */}
       <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-xs">

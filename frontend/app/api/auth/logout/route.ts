@@ -12,7 +12,7 @@ import { SESSION_COOKIE } from '@/lib/api';
  */
 export const dynamic = 'force-dynamic';
 
-const CORE_HUB_WEB_URL = (process.env.CORE_HUB_WEB_URL ?? 'http://localhost:3100').replace(/\/+$/, '');
+const CORE_HUB_WEB_URL = (process.env.CORE_HUB_WEB_URL ?? 'https://csmju2030.jowave.com').replace(/\/+$/, '');
 
 export async function POST() {
   cookies().delete(SESSION_COOKIE);

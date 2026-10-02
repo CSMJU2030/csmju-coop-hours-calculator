@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { PageBanner, bannerButtonClass } from '@/components/PageBanner';
 
 export interface PublishedActivity {
   id: string;
@@ -114,20 +115,18 @@ export default function AdminActivitiesPage() {
 
   return (
     <div className="max-w-7xl mx-auto p-6 space-y-6">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">การจัดการกิจกรรมของหลักสูตร</h1>
-          <p className="text-xs text-slate-500 mt-1">
-            รายการกิจกรรมทั้งหมดที่เปิดให้นักศึกษาลงทะเบียน พร้อมระบบพิมพ์ใบเซ็นชื่อ
-          </p>
-        </div>
-        <Link
-          href="/admin/activities/new"
-          className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white rounded-2xl text-xs font-bold shadow-md transition cursor-pointer"
-        >
-          + ประกาศกิจกรรมใหม่
-        </Link>
-      </div>
+      <PageBanner
+        compact
+        eyebrow="อาจารย์"
+        title="การจัดการกิจกรรมของหลักสูตร"
+        subtitle="รายการกิจกรรมทั้งหมดที่เปิดให้นักศึกษาลงทะเบียน พร้อมระบบพิมพ์ใบเซ็นชื่อ"
+        actions={
+          <Link href="/admin/activities/new" className={bannerButtonClass}>
+            <span className="text-lg leading-none">+</span>
+            <span>ประกาศกิจกรรมใหม่</span>
+          </Link>
+        }
+      />
 
       <div className="bg-white border border-slate-200 rounded-3xl shadow-xs overflow-hidden">
         <div className="overflow-x-auto">

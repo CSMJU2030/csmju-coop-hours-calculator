@@ -5,13 +5,16 @@ name: csmju-coop-hours-calculator          # ต้องตรงกับท�
 standards_version: "1.0.0"
 conformance_level: L3                 # L1 · L2 · L3 (ระบบที่มี UI ต้องถึง L3)
 
-base_url: http://localhost:3002       # URL ของระบบย่อยตอนรันเพื่อทดสอบ
-core_hub_url: http://localhost:3000
+base_url: http://localhost:3210       # พอร์ต frontend (ประตูเดียวของระบบ) — localhost ไม่ใช่ 127.0.0.1
+core_hub_url: https://csmju2030.jowave.com       # Core Hub จริง (API อยู่ใต้ /api/v1)
+core_hub_web_url: https://csmju2030.jowave.com   # เว็บที่ /auth/login และ /auth/logout ส่งเบราว์เซอร์ไป
 callback_path: /auth/callback         # ต้องตรงกับ callback_url ที่ลงทะเบียนไว้
 
 public_endpoints:
   - GET /api/health
+  - GET /auth/login
   - GET /auth/callback
+  - POST /auth/logout
 
 # conformance ใช้ probes ตรวจสัญญา API — ประกาศไม่ครบ = ขึ้น SKIP = ยังไม่ผ่าน
 probes:

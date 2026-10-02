@@ -9,7 +9,7 @@ export interface AppConfig {
   subsystemName: string;
   coreHub: {
     url: string;
-    /** เว็บของ Core Hub ที่ GET /auth/login ส่งเบราว์เซอร์ไป (auth-contract.md ข้อ 5.2) */
+    /** Core Hub's web app, where /auth/login and /auth/logout send the browser. */
     webUrl: string;
     jwksUrl: string;
     issuer: string;
@@ -18,6 +18,10 @@ export interface AppConfig {
     jwksMinRefreshIntervalMs: number;
     jwksRequestTimeoutMs: number;
     clockToleranceSec: number;
+    /** Reference data cache (SHARED_DATA_HANDOFF ข้อ 6.4) */
+    dataCacheTtlMs: number;
+    dataMinRefreshIntervalMs: number;
+    dataRequestTimeoutMs: number;
   };
 }
 
@@ -31,12 +35,13 @@ export default (): AppConfig => {
 
   return {
     nodeEnv: process.env.NODE_ENV ?? 'development',
-    port: num(process.env.PORT, 3012),
+    port: num(process.env.PORT, 4210),
     subsystemId: process.env.SUBSYSTEM_ID ?? 'csmju-coop-hours-calculator',
     subsystemName: process.env.SUBSYSTEM_NAME ?? 'ระบบติดตามชั่วโมงสหกิจและกิจกรรม',
     coreHub: {
       url: coreHubUrl,
-      webUrl: (process.env.CORE_HUB_WEB_URL ?? 'http://localhost:3100').replace(/\/+$/, ''),
+      // On the real server the web app and the API share one origin.
+      webUrl: (process.env.CORE_HUB_WEB_URL ?? coreHubUrl).replace(/\/+$/, ''),
       jwksUrl:
         process.env.CORE_HUB_JWKS_URL ??
         `${coreHubUrl.replace(/\/+$/, '')}/api/v1/.well-known/jwks.json`,
@@ -46,6 +51,9 @@ export default (): AppConfig => {
       jwksMinRefreshIntervalMs: num(process.env.JWKS_MIN_REFRESH_INTERVAL_MS, 30 * 1000),
       jwksRequestTimeoutMs: num(process.env.JWKS_REQUEST_TIMEOUT_MS, 5000),
       clockToleranceSec: num(process.env.JWT_CLOCK_TOLERANCE_SEC, 5),
+      dataCacheTtlMs: num(process.env.CORE_HUB_DATA_CACHE_TTL_MS, 10 * 60 * 1000),
+      dataMinRefreshIntervalMs: num(process.env.CORE_HUB_DATA_MIN_REFRESH_INTERVAL_MS, 30 * 1000),
+      dataRequestTimeoutMs: num(process.env.CORE_HUB_DATA_REQUEST_TIMEOUT_MS, 5000),
     },
   };
 };

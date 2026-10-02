@@ -9,10 +9,14 @@ import { cookies, headers } from 'next/headers';
  * route handler ที่หยิบคุกกี้ส่งต่อไป backend
  */
 
-const BACKEND_API_URL = (process.env.BACKEND_API_URL ?? 'http://127.0.0.1:3012/api/v1').replace(/\/+$/, '');
+const BACKEND_API_URL = (process.env.BACKEND_API_URL ?? 'http://127.0.0.1:4210/api/v1').replace(/\/+$/, '');
 
-/** ชื่อคุกกี้ session ต้องตรงกับ SSO_COOKIE_NAME ใน backend/src/auth/sso-session.ts */
-export const SESSION_COOKIE = 'csmju_coop_hours_access_token';
+/**
+ * ชื่อคุกกี้ session ต้องตรงกับ ssoCookieNames(SUBSYSTEM_ID).session ใน backend/src/auth/sso-session.ts
+ * (`<subsystem_id ที่ - เป็น _>_access_token`)
+ */
+const SUBSYSTEM_ID = process.env.SUBSYSTEM_ID ?? 'csmju-coop-hours-calculator';
+export const SESSION_COOKIE = `${SUBSYSTEM_ID.replace(/-/g, '_')}_access_token`;
 
 export class ApiError extends Error {
   constructor(

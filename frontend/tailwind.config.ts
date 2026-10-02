@@ -1,15 +1,42 @@
 import type { Config } from 'tailwindcss';
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const csmjuPreset = require('./styles/csmju/tailwind-preset.js');
 
 const config: Config = {
+  presets: [csmjuPreset],
   content: ['./app/**/*.{ts,tsx}', './components/**/*.{ts,tsx}', './lib/**/*.{ts,tsx}'],
   theme: {
     extend: {
       colors: {
+        blue: {
+          50: '#e6f2ff',
+          100: '#d3e7fc',
+          200: '#93c5fd',
+          300: '#6aa6e6',
+          400: '#3d82cc',
+          500: '#1f66b0',
+          600: '#004c99',
+          700: '#003d7a',
+          800: '#002e5c',
+          900: '#001f3d',
+        },
+        indigo: {
+          50: '#e6f2ff',
+          100: '#d3e7fc',
+          200: '#93c5fd',
+          300: '#6aa6e6',
+          400: '#3d82cc',
+          500: '#1f66b0',
+          600: '#004c99',
+          700: '#003d7a',
+          800: '#002e5c',
+          900: '#001f3d',
+        },
         // CSMJU2030 design tokens — see @csmju2030/design-system
         primary: {
-          DEFAULT: '#004C99', // Maejo Blue
-          dark: '#003970',
-          light: '#1F66B0',
+          DEFAULT: '#004c99', // --csmju-color-primary
+          dark: '#003d7a',
+          light: '#1f66b0',
         },
         secondary: '#E6F2FF',
         neutral: '#334155',
@@ -19,8 +46,9 @@ const config: Config = {
         danger: '#B42318',
       },
       fontFamily: {
-        thai: ['"Noto Sans Thai"', '"IBM Plex Sans Thai"', 'system-ui', 'sans-serif'],
-        sans: ['"Inter"', '"Noto Sans Thai"', 'system-ui', 'sans-serif'],
+        thai: ['var(--csmju-font-body)'],
+        sans: ['var(--csmju-font-body)'],
+        heading: ['var(--csmju-font-heading)'],
       },
       fontSize: {
         base: ['14px', { lineHeight: '1.6' }],
@@ -36,7 +64,7 @@ const config: Config = {
         'button': '0 4px 12px -2px rgba(0, 76, 153, 0.25)',
       },
       backgroundImage: {
-        'gradient-primary': 'linear-gradient(135deg, #004C99 0%, #1F66B0 100%)',
+        'gradient-primary': 'linear-gradient(135deg, #004c99 0%, #003d7a 100%)',
         'gradient-coop': 'linear-gradient(135deg, #004C99 0%, #0F8A5F 100%)',
         'gradient-volunteer': 'linear-gradient(135deg, #0F8A5F 0%, #10B981 100%)',
         'gradient-surface': 'linear-gradient(135deg, #F8FAFC 0%, #EEF2FF 100%)',
