@@ -9,10 +9,12 @@ export const dynamic = 'force-dynamic';
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { requestId, status, rejectReason } = body as {
+    const { requestId, status, rejectReason, approvedHours, approvedCategory } = body as {
       requestId?: string;
       status?: string;
       rejectReason?: string;
+      approvedHours?: number;
+      approvedCategory?: string;
     };
 
     if (!requestId || !status) {
@@ -25,7 +27,10 @@ export async function POST(request: Request) {
             method: 'POST',
             body: { reason: rejectReason || 'ไม่ระบุเหตุผล' },
           })
-        : await apiFetch(`/hour-requests/${requestId}/approve`, { method: 'POST' });
+        : await apiFetch(`/hour-requests/${requestId}/approve`, {
+            method: 'POST',
+            body: { approvedHours, approvedCategory },
+          });
 
     return NextResponse.json({ success: true, data });
   } catch (error) {

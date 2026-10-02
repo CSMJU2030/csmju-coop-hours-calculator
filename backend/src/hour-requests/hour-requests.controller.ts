@@ -6,6 +6,7 @@ import { CoreHubIdentity } from '../auth/core-hub-identity';
 import { Permission } from '../auth/permissions';
 import { CollectionResult } from '../common/api-response';
 import { buildPaginationMeta } from '../common/dto/pagination.dto';
+import { ApproveHourRequestDto } from './dto/approve-hour-request.dto';
 import { CreateHourRequestDto } from './dto/create-hour-request.dto';
 import { QueryHourRequestsDto } from './dto/query-hour-requests.dto';
 import { RejectHourRequestDto } from './dto/reject-hour-request.dto';
@@ -63,8 +64,12 @@ export class HourRequestsController {
 
   @Post(':id/approve')
   @RequirePermissions(Permission.HOUR_REQUEST_REVIEW_ANY)
-  approve(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: CoreHubIdentity) {
-    return this.hourRequests.approve(user, id);
+  approve(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: ApproveHourRequestDto,
+    @CurrentUser() user: CoreHubIdentity,
+  ) {
+    return this.hourRequests.approve(user, id, dto);
   }
 
   @Post(':id/reject')
