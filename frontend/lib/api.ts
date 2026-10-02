@@ -123,6 +123,23 @@ export async function getCurrentUserOrNull(): Promise<CurrentUser | null> {
   return apiFetchOrNull<CurrentUser>('/me');
 }
 
+/** โปรไฟล์ของผู้ใช้ที่ login อยู่ — ชื่อมาจาก Core Hub (/people/me) ผ่าน backend ไม่ได้เก็บในระบบนี้ */
+export interface MyProfile {
+  coreUserId: string;
+  coreRole: string;
+  personCode: string | null;
+  displayName: string | null;
+}
+
+/** คืน null เมื่อยังไม่ login หรือดึงไม่ได้ — ใช้กับ layout ที่ต้องแสดงผลได้เสมอ */
+export async function getMyProfileOrNull(): Promise<MyProfile | null> {
+  try {
+    return await apiFetchOrNull<MyProfile>('/me/profile');
+  } catch {
+    return null;
+  }
+}
+
 export function isAdminRole(user: { subsystemRole: string } | null): boolean {
   return user?.subsystemRole === 'STAFF' || user?.subsystemRole === 'ADMIN';
 }

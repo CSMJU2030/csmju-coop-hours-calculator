@@ -65,33 +65,8 @@ export default function AdminRequestsPage() {
         console.error(e);
       }
     } else {
-      // ข้อมูลเริ่มต้นสำหรับทดสอบระบบ
-      const defaultData: ActivityItem[] = [
-        {
-          id: 'req-1',
-          title: 'อบรมการพัฒนาเว็บไซต์ด้วย React',
-          categoryTarget: 'COOP',
-          hours: 6,
-          dateStr: '10 ก.ย. 2568',
-          status: 'APPROVED',
-          statusText: 'อนุมัติแล้ว',
-          approvedCategory: 'COOP',
-          approvedHours: 6,
-          UserProfile: { fullName: 'นายสมชาย ใจดี', studentCode: '6704101359' }
-        },
-        {
-          id: 'req-2',
-          title: 'ปลุกป่าชายเลน',
-          categoryTarget: 'VOLUNTEER',
-          hours: 3,
-          dateStr: '18 ก.ย. 2569',
-          status: 'PENDING_APPROVAL',
-          statusText: 'รอตรวจสอบ',
-          UserProfile: { fullName: 'นายสมชาย ใจดี', studentCode: '6704101359' }
-        }
-      ];
-      setRequests(defaultData);
-      localStorage.setItem('csmju_shared_activities', JSON.stringify(defaultData));
+      // ไม่มีข้อมูลสำรอง: ดึงจากระบบไม่ได้ก็แสดงรายการว่าง ไม่แสดงข้อมูลตัวอย่าง
+      setRequests([]);
     }
   };
 

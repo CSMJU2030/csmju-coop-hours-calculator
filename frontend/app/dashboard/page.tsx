@@ -49,6 +49,7 @@ export default function StudentDashboardPage() {
   const [viewMonth, setViewMonth] = useState<number>(today.getMonth());
 
   const [activities, setActivities] = useState<ActivityItem[]>([]);
+  const [student, setStudent] = useState<{ displayName: string | null; personCode: string | null } | null>(null);
   const [publishedList, setPublishedList] = useState<PublishedActivity[]>([]);
   const [registeredIds, setRegisteredIds] = useState<string[]>([]);
 
@@ -71,6 +72,7 @@ export default function StudentDashboardPage() {
         if (dbData?.activities) setActivities(dbData.activities);
         if (dbData?.publishedList) setPublishedList(dbData.publishedList);
         if (dbData?.registeredIds) setRegisteredIds(dbData.registeredIds);
+        if (dbData?.student) setStudent(dbData.student);
       }
     } catch (err) {
       console.error('Error fetching data from database:', err);
@@ -254,8 +256,8 @@ export default function StudentDashboardPage() {
     <div className="space-y-8 pb-16 max-w-7xl mx-auto px-4 sm:px-6">
       {/* 1. ส่วนหัวแบนเนอร์ */}
       <PageBanner
-        eyebrow="นักศึกษา รหัส 67"
-        title="นางสาวพัฒน์นรี วันพิลา"
+        eyebrow={student?.personCode ? `นักศึกษา รหัส ${student.personCode.slice(0, 2)}` : 'นักศึกษา'}
+        title={student?.displayName ?? 'นักศึกษา'}
         subtitle="สาขาวิชาวิทยาการคอมพิวเตอร์ คณะวิทยาศาสตร์ มหาวิทยาลัยแม่โจ้"
         actions={
           <button onClick={() => setIsSubmitModalOpen(true)} className={bannerButtonClass}>

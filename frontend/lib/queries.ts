@@ -99,7 +99,7 @@ interface ApiRegistration {
 
 /** ดึงกิจกรรมทั้งหมด (backend ใส่ pagination ไว้ — หน้านี้ขอทีเดียวให้ครบ) */
 async function fetchAllActivities(): Promise<ApiActivity[]> {
-  return apiFetch<ApiActivity[]>('/activities?page=1&limit=200');
+  return apiFetch<ApiActivity[]>('/activities?page=1&limit=100');
 }
 
 /**
