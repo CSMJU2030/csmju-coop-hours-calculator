@@ -4,9 +4,9 @@
   "private": true,
   "description": "CSMJU Co-op Prep & Activity Hours Tracking System — plug-in subsystem of the CSMJU2030 Ecosystem",
   "scripts": {
-    "dev": "next dev -p 3013",
+    "dev": "next dev -p 3210",
     "build": "next build",
-    "start": "next start -p 3013",
+    "start": "next start -p 3210",
     "lint": "next lint",
     "typecheck": "tsc --noEmit"
   },

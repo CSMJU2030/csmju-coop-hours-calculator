@@ -97,7 +97,8 @@ export async function requireIdentity(nextPath = '/'): Promise<Identity> {
     return await getIdentity();
   } catch (error) {
     if (error instanceof UnauthorizedError) {
-      redirect(`${loginBase}/auth/login?next=${encodeURIComponent(nextPath)}`);
+      // ใช้ path สัมพัทธ์: next.config ส่ง /auth/* ต่อไป backend เพื่อให้คุกกี้ state อยู่ origin เดียวกับหน้าเว็บ
+      redirect(`/auth/login?next=${encodeURIComponent(nextPath)}`);
     }
     throw error;
   }
