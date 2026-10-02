@@ -5,6 +5,7 @@ import { PeopleService } from '../core-hub/people.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { ProfileService } from '../users/profile.service';
 import { CoreHubIdentity } from '../auth/core-hub-identity';
+import { ApproveHourRequestDto } from './dto/approve-hour-request.dto';
 import { CreateHourRequestDto } from './dto/create-hour-request.dto';
 import { QueryHourRequestsDto } from './dto/query-hour-requests.dto';
 
@@ -113,18 +114,20 @@ export class HourRequestsService {
     return { id, deleted: true };
   }
 
-  async approve(reviewer: CoreHubIdentity, id: string) {
+  /**
+   * อนุมัติ — ใช้ได้กับคำร้องทุกสถานะ: ทั้งอนุมัติครั้งแรก เปลี่ยนจาก "ไม่อนุมัติ" เป็นอนุมัติ
+   * และแก้ชั่วโมง/หมวดของคำร้องที่อนุมัติไปแล้ว (อาจารย์กดผิดได้) ยอดสะสมของนักศึกษาคิดจาก
+   * approvedHours/approvedCategory ของคำร้องที่อนุมัติ จึงตรงกับผลตรวจล่าสุดเสมอ
+   */
+  async approve(reviewer: CoreHubIdentity, id: string, dto: ApproveHourRequestDto = {}) {
     const existing = await this.prisma.hourRequest.findUnique({ where: { id } });
     if (!existing) throw AppException.notFound('ไม่พบคำร้องนี้ในระบบ');
-    if (existing.status !== HourRequestStatus.PENDING && existing.status !== HourRequestStatus.PENDING_APPROVAL) {
-      throw AppException.conflict('อนุมัติได้เฉพาะคำร้องที่สถานะรอตรวจสอบเท่านั้น');
-    }
     return this.prisma.hourRequest.update({
       where: { id },
       data: {
         status: HourRequestStatus.APPROVED,
-        approvedHours: existing.hours,
-        approvedCategory: existing.category,
+        approvedHours: dto.approvedHours ?? existing.hours,
+        approvedCategory: dto.approvedCategory ?? existing.category,
         statusText: 'อนุมัติแล้ว',
         reviewedBy: reviewer.id,
         rejectionReason: null,
@@ -132,12 +135,13 @@ export class HourRequestsService {
     });
   }
 
+  /**
+   * ไม่อนุมัติ — ใช้ได้กับคำร้องทุกสถานะ รวมถึงที่เคยอนุมัติไปแล้ว: ล้างชั่วโมงและหมวดที่อนุมัติ
+   * เพื่อให้ไม่ถูกนับในยอดสะสมอีก
+   */
   async reject(reviewer: CoreHubIdentity, id: string, reason: string) {
     const existing = await this.prisma.hourRequest.findUnique({ where: { id } });
     if (!existing) throw AppException.notFound('ไม่พบคำร้องนี้ในระบบ');
-    if (existing.status !== HourRequestStatus.PENDING && existing.status !== HourRequestStatus.PENDING_APPROVAL) {
-      throw AppException.conflict('ปฏิเสธได้เฉพาะคำร้องที่สถานะรอตรวจสอบเท่านั้น');
-    }
     return this.prisma.hourRequest.update({
       where: { id },
       data: {
@@ -145,6 +149,8 @@ export class HourRequestsService {
         statusText: 'ไม่อนุมัติ',
         reviewedBy: reviewer.id,
         rejectionReason: reason.trim(),
+        approvedHours: null,
+        approvedCategory: null,
       },
     });
   }
