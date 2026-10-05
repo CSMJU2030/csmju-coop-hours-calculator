@@ -44,6 +44,10 @@ export default function NewHourRequestPage() {
       alert('กรุณาเลือกวันที่จัดกิจกรรม');
       return;
     }
+    if (!formData.proofImageBase64) {
+      alert('กรุณาแนบรูปภาพหลักฐานก่อนส่งคำร้อง');
+      return;
+    }
 
     setLoading(true);
 
@@ -192,7 +196,9 @@ export default function NewHourRequestPage() {
 
         {/* ส่วนอัปโหลดรูปภาพหลักฐานจากเครื่อง */}
         <div>
-          <label className="block text-sm font-bold text-slate-700 mb-1.5">รูปภาพหลักฐาน (เกียรติบัตร หรือ ภาพถ่ายหน้างาน)</label>
+          <label className="block text-sm font-bold text-slate-700 mb-1.5">
+            รูปภาพหลักฐาน (เกียรติบัตร หรือ ภาพถ่ายหน้างาน) <span className="text-rose-600">*</span>
+          </label>
           <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-slate-300 border-dashed rounded-2xl hover:border-blue-400 transition bg-slate-50/50">
             <div className="space-y-2 text-center">
               {previewUrl ? (
@@ -227,6 +233,7 @@ export default function NewHourRequestPage() {
                     />
                   </label>
                   <p className="text-xs text-slate-400 mt-1">รองรับไฟล์ PNG, JPG, JPEG (ขนาดไม่เกิน 5MB)</p>
+                  <p className="text-xs font-bold text-rose-600 mt-1">ต้องแนบรูปภาพก่อน จึงจะส่งคำร้องได้</p>
                 </div>
               )}
             </div>
@@ -246,8 +253,8 @@ export default function NewHourRequestPage() {
 
         <button
           type="submit"
-          disabled={loading}
-          className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-sm shadow-md transition disabled:opacity-50"
+          disabled={loading || !formData.proofImageBase64}
+          className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-sm shadow-md transition disabled:cursor-not-allowed disabled:opacity-50"
         >
           {loading ? 'กำลังบันทึกข้อมูล...' : 'ส่งคำร้องขออนุมัติ'}
         </button>
