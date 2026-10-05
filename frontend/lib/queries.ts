@@ -80,6 +80,7 @@ interface ApiActivity {
   coopHours: number;
   volunteerHours: number;
   majorHours: number;
+  lecturerInCharge: string;
   status: ActivityStatus;
   registeredCount?: number;
   waitingCount?: number;
@@ -217,7 +218,10 @@ export async function getActivitiesForAdmin() {
 
 export interface AttendanceRow {
   registrationId: string;
+  /** core_user_id — ใช้เป็นกุญแจยืนยันการเข้าร่วม ห้ามนำไปแสดงเป็นรหัสนักศึกษา */
   username: string;
+  /** รหัสนักศึกษา (person_code) สำหรับแสดงผล — ยังไม่ผูกกับบุคคลใน Core Hub = null */
+  studentCode: string | null;
   displayName: string | null;
   major: string | null;
   yearLevel: number | null;
@@ -231,6 +235,7 @@ interface ApiRosterRow {
   status: RegistrationStatus;
   queueNumber: number | null;
   userProfile: {
+    personCode?: string | null;
     displayName: string | null;
     fullName: string | null;
     major: string | null;
@@ -244,6 +249,7 @@ function toAttendanceRow(r: ApiRosterRow): AttendanceRow {
     // ฟิลด์นี้ชื่อ username มาแต่เดิม แต่ค่าที่ใส่คือ core_user_id ตามมาตรฐาน
     // (data-dictionary.md ข้อ 9.2) — เก็บชื่อเดิมไว้เพื่อไม่ให้หน้าเว็บพัง
     username: r.coreUserId,
+    studentCode: r.userProfile?.personCode ?? null,
     displayName: r.userProfile?.displayName ?? r.userProfile?.fullName ?? null,
     major: r.userProfile?.major ?? null,
     yearLevel: r.userProfile?.yearLevel ?? null,

@@ -138,5 +138,21 @@
   .print-sheet {
     box-shadow: none !important;
     border: none !important;
+    border-radius: 0 !important;
+    padding: 0 !important;
+  }
+
+  main {
+    margin-left: 0 !important;
+  }
+
+  .print-sheet thead {
+    display: table-header-group;
+  }
+
+  .print-sheet tr,
+  .print-keep {
+    break-inside: avoid;
+    page-break-inside: avoid;
   }
 }

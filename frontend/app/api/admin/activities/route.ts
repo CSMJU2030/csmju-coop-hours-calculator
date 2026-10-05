@@ -36,7 +36,7 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { title, description, category, hours, dateStr, timeStr, location, capacity } =
+    const { title, description, category, hours, dateStr, timeStr, location, capacity, lecturerInCharge } =
       body as Record<string, string | number | undefined>;
 
     let activityDate = new Date();
@@ -81,7 +81,7 @@ export async function POST(request: Request) {
         endTime: endDateTime.toISOString(),
         registrationDeadline: startDateTime.toISOString(),
         capacity: Number(capacity) || 30,
-        lecturerInCharge: '-',
+        lecturerInCharge: String(lecturerInCharge ?? '').trim() || '-',
         coopHours: isCoop ? activityHours : 0,
         volunteerHours: isCoop ? 0 : activityHours,
         majorHours: 0,

@@ -16,6 +16,7 @@ export default function CreateActivityPage() {
   const [endTime, setEndTime] = useState('16:00');
   const [location, setLocation] = useState('ห้องปฏิบัติการคอมพิวเตอร์ คณะวิทยาศาสตร์ แม่โจ้');
   const [capacity, setCapacity] = useState('40');
+  const [lecturerInCharge, setLecturerInCharge] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,6 +35,7 @@ export default function CreateActivityPage() {
       timeStr,
       location,
       capacity: Number(capacity) || 30,
+      lecturerInCharge: lecturerInCharge.trim(),
     };
 
     try {
@@ -89,6 +91,18 @@ export default function CreateActivityPage() {
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="เช่น อบรมเชิงปฏิบัติการ Docker สำหรับนักศึกษาปี 3"
+            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none"
+          />
+        </div>
+
+        <div>
+          <label className="block text-xs font-bold text-slate-700 mb-1.5">อาจารย์ผู้รับผิดชอบกิจกรรม (ไม่บังคับ)</label>
+          <input
+            type="text"
+            maxLength={200}
+            value={lecturerInCharge}
+            onChange={(e) => setLecturerInCharge(e.target.value)}
+            placeholder="เช่น ผศ.ดร.ชื่อ นามสกุล (ถ้ากรอก จะแสดงบนใบเซ็นชื่อ)"
             className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none"
           />
         </div>

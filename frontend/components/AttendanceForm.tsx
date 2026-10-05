@@ -81,7 +81,7 @@ export function AttendanceForm({ activityId, seated }: { activityId: string; sea
                     className="h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary"
                   />
                 </td>
-                <td className="px-4 py-2.5 text-neutral">{row.username}</td>
+                <td className="px-4 py-2.5 text-neutral">{row.studentCode ?? '—'}</td>
                 <td className="px-4 py-2.5 text-neutral">{row.displayName ?? '—'}</td>
                 <td className="px-4 py-2.5 text-slate-500">
                   {row.yearLevel ? `ปี ${row.yearLevel}` : '—'} / {row.major ?? '—'}
