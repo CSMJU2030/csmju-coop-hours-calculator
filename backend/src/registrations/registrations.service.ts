@@ -159,6 +159,7 @@ export class RegistrationsService {
       return {
         ...row,
         userProfile: {
+          personCode: row.userProfile?.personCode ?? null,
           displayName: person?.fullNameTh ?? null,
           fullName: person?.fullNameTh ?? null,
           major: person?.departmentNameTh ?? null,
