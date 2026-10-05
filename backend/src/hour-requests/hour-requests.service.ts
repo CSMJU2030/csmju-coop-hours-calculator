@@ -40,7 +40,7 @@ export class HourRequestsService {
       this.prisma.$transaction([
         this.prisma.hourRequest.findMany({
           where,
-          orderBy: { createdAt: 'asc' },
+          orderBy: [{ createdAt: 'desc' }, { id: 'desc' }], // ใหม่สุดอยู่บนสุด (id ช่วยให้เรียงคงที่เมื่อเวลาเท่ากัน)
           skip: query.skip,
           take: query.take,
         }),

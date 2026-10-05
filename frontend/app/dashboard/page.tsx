@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { PageBanner, bannerButtonClass } from '@/components/PageBanner';
 import {
   COOP_CONFIG,
@@ -52,6 +52,11 @@ export default function StudentDashboardPage() {
   const [student, setStudent] = useState<{ displayName: string | null; personCode: string | null } | null>(null);
   const [publishedList, setPublishedList] = useState<PublishedActivity[]>([]);
   const [registeredIds, setRegisteredIds] = useState<string[]>([]);
+  // ยอดชั่วโมงสะสมจาก backend (คำร้องที่อนุมัติ + กิจกรรมที่ลงทะเบียนได้ที่นั่ง) ไม่ได้คำนวณเองบนหน้าจอ
+  const [hours, setHours] = useState({ coop: 0, volunteer: 0 });
+  // รีเฟรชอัตโนมัติจะไม่ยิงซ้อน ส่วนการโหลดหลังกดลงทะเบียน/ยกเลิกทำเสมอ และผลเก่าที่มาถึงทีหลังจะถูกทิ้ง
+  const loadingRef = useRef(false);
+  const latestRequestRef = useRef(0);
 
   const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false);
   const [selectedActivityDetail, setSelectedActivityDetail] = useState<ActivityItem | null>(null);
@@ -64,20 +69,35 @@ export default function StudentDashboardPage() {
   const [newNote, setNewNote] = useState('');
 
   // โหลดข้อมูลทั้งหมดจาก API (ฐานข้อมูล PostgreSQL ผ่าน Prisma) โดยตรง
-  const loadAllData = async () => {
+  const fetchDashboard = async (lite: boolean) => {
+    if (lite && loadingRef.current) return;
+    const requestId = ++latestRequestRef.current;
+    loadingRef.current = true;
     try {
-      const response = await fetch('/api/student/dashboard', { method: 'GET', cache: 'no-store' });
+      const response = await fetch(`/api/student/dashboard${lite ? '?lite=1' : ''}`, { method: 'GET', cache: 'no-store' });
       if (response.ok) {
         const dbData = await response.json();
+        if (requestId !== latestRequestRef.current) return; // มีคำขอใหม่กว่าแล้ว
         if (dbData?.activities) setActivities(dbData.activities);
         if (dbData?.publishedList) setPublishedList(dbData.publishedList);
         if (dbData?.registeredIds) setRegisteredIds(dbData.registeredIds);
         if (dbData?.student) setStudent(dbData.student);
+        if (dbData?.summary) {
+          setHours({
+            coop: Number(dbData.summary.coopHours) || 0,
+            volunteer: Number(dbData.summary.volunteerHours) || 0,
+          });
+        }
       }
     } catch (err) {
       console.error('Error fetching data from database:', err);
+    } finally {
+      if (requestId === latestRequestRef.current) loadingRef.current = false;
     }
   };
+
+  /** โหลดเต็ม (ใช้ครั้งแรก และหลังกดลงทะเบียน/ยกเลิก/ยื่นคำร้อง) */
+  const loadAllData = () => fetchDashboard(false);
 
   useEffect(() => {
     loadAllData();
@@ -89,11 +109,22 @@ export default function StudentDashboardPage() {
       }
     };
 
+    // รีเฟรชแบบเบาทุก 5 วินาทีขณะเปิดหน้านี้อยู่ และทันทีที่กลับมาที่แท็บ
+    const refreshQuietly = () => {
+      if (document.visibilityState === 'visible') void fetchDashboard(true);
+    };
+    const pollTimer = window.setInterval(refreshQuietly, 5000);
+    document.addEventListener('visibilitychange', refreshQuietly);
+    window.addEventListener('focus', refreshQuietly);
+
     window.addEventListener('storage', handleStorageChange);
     window.addEventListener('csmju_activity_updated', loadAllData);
     window.addEventListener('csmju_hours_updated', loadAllData);
 
     return () => {
+      window.clearInterval(pollTimer);
+      document.removeEventListener('visibilitychange', refreshQuietly);
+      window.removeEventListener('focus', refreshQuietly);
       window.removeEventListener('storage', handleStorageChange);
       window.removeEventListener('csmju_activity_updated', loadAllData);
       window.removeEventListener('csmju_hours_updated', loadAllData);
@@ -123,7 +154,7 @@ export default function StudentDashboardPage() {
         localStorage.setItem('csmju_activity_sync', Date.now().toString());
 
         if (isRegistered) {
-          alert(`ยกเลิกการลงทะเบียน "${act.title}" เรียบร้อยแล้ว`);
+          alert(`ยกเลิกการลงทะเบียน "${act.title}" เรียบร้อยแล้ว (หักชั่วโมงคืนแล้ว)`);
         } else {
           alert(`ลงทะเบียนสำเร็จ: "${act.title}" ได้รับ ${act.hours} ชั่วโมงเรียบร้อยแล้ว!`);
         }
@@ -138,33 +169,8 @@ export default function StudentDashboardPage() {
 
   const coopTarget = 15;
 
-  const coopHoursEarned = useMemo(() => {
-    return activities
-      .filter(
-        (a) =>
-          (a.status === 'APPROVED' || a.status === 'อนุมัติแล้ว') &&
-          (
-            a.approvedCategory === 'COOP' || 
-            a.typeCategory === 'COOP' ||
-            (!a.approvedCategory && (a.categoryTarget === 'COOP' || !a.typeCategory))
-          )
-      )
-      .reduce((sum, a) => sum + (Number(a.approvedHours ?? a.hours) || 0), 0);
-  }, [activities]);
-
-  const volunteerHoursEarned = useMemo(() => {
-    return activities
-      .filter(
-        (a) =>
-          (a.status === 'APPROVED' || a.status === 'อนุมัติแล้ว') &&
-          (
-            a.approvedCategory === 'VOLUNTEER' || 
-            a.typeCategory === 'VOLUNTEER' ||
-            (!a.approvedCategory && a.categoryTarget === 'VOLUNTEER')
-          )
-      )
-      .reduce((sum, a) => sum + (Number(a.approvedHours ?? a.hours) || 0), 0);
-  }, [activities]);
+  const coopHoursEarned = hours.coop;
+  const volunteerHoursEarned = hours.volunteer;
 
   const countdownInternship = useMemo(() => {
     return getCountdownToDeadline(COOP_CONFIG.internshipStartDate, today);

@@ -47,13 +47,17 @@ interface DashboardPayload {
     status: string;
   }>;
   registeredActivityIds: string[];
+  summary: { coopHours: number; volunteerHours: number; majorHours: number };
 }
 
-export async function GET() {
+export async function GET(request: Request) {
+  // ?lite=1: หน้านักศึกษาถามซ้ำทุก 5 วินาทีเพื่อให้ชั่วโมงขึ้นทันที จึงไม่ถามชื่อจาก Core Hub ซ้ำทุกรอบ
+  const lite = new URL(request.url).searchParams.get('lite') === '1';
+
   try {
     const [dashboard, profile] = await Promise.all([
       apiFetch<DashboardPayload>('/me/dashboard'),
-      getMyProfileOrNull(),
+      lite ? Promise.resolve(null) : getMyProfileOrNull(),
     ]);
 
     const activities = dashboard.hourRequests.map((req) => ({
@@ -100,7 +104,8 @@ export async function GET() {
       activities,
       publishedList,
       registeredIds: dashboard.registeredActivityIds,
-      student: { displayName: profile?.displayName ?? null, personCode: profile?.personCode ?? null },
+      summary: dashboard.summary,
+      student: lite ? undefined : { displayName: profile?.displayName ?? null, personCode: profile?.personCode ?? null },
     });
   } catch (error) {
     if (error instanceof UnauthenticatedError) {

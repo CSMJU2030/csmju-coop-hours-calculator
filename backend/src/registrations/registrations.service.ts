@@ -178,7 +178,11 @@ export class RegistrationsService {
     return { activity, seated, waiting };
   }
 
-  /** อาจารย์ยืนยันการเข้าร่วมแบบชุด — ให้/ถอนชั่วโมงทันที (spec เดิม: ให้ชั่วโมงตอนยืนยัน ไม่ใช่ตอนลงทะเบียน) */
+  /**
+   * อาจารย์ยืนยันการเข้าร่วมแบบชุด — มาเข้าร่วม = ATTENDED, ไม่มา = ABSENT
+   * ชั่วโมงได้ตั้งแต่ลงทะเบียนแล้ว (HoursService คำนวณสดจากสถานะ): ATTENDED ยังนับ ส่วน ABSENT หักออกทันที
+   * จึงไม่ต้องบวก/ลบตัวนับแยกที่นี่อีก
+   */
   async confirmAttendance(activityId: string, attendedCoreUserIds: string[]) {
     const attendedSet = new Set(attendedCoreUserIds);
 
@@ -208,33 +212,8 @@ export class RegistrationsService {
               creditedMajorHours: activity.majorHours,
             },
           });
-          await tx.userHourSummary.upsert({
-            where: { coreUserId: reg.coreUserId },
-            create: {
-              coreUserId: reg.coreUserId,
-              coopHours: activity.coopHours,
-              volunteerHours: activity.volunteerHours,
-              majorHours: activity.majorHours,
-            },
-            update: {
-              coopHours: { increment: activity.coopHours },
-              volunteerHours: { increment: activity.volunteerHours },
-              majorHours: { increment: activity.majorHours },
-            },
-          });
           attended += 1;
         } else {
-          if (reg.status === RegistrationStatus.ATTENDED) {
-            await tx.userHourSummary.upsert({
-              where: { coreUserId: reg.coreUserId },
-              create: { coreUserId: reg.coreUserId, coopHours: 0, volunteerHours: 0, majorHours: 0 },
-              update: {
-                coopHours: { decrement: reg.creditedCoopHours ?? 0 },
-                volunteerHours: { decrement: reg.creditedVolunteerHours ?? 0 },
-                majorHours: { decrement: reg.creditedMajorHours ?? 0 },
-              },
-            });
-          }
           await tx.registration.update({
             where: { id: reg.id },
             data: {
