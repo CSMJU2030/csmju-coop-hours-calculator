@@ -70,6 +70,11 @@ export class HourRequestsService {
   }
 
   async create(user: CoreHubIdentity, dto: CreateHourRequestDto, token: string) {
+    // ต้องแนบรูปหลักฐานทุกครั้ง — ตรวจก่อนทำอย่างอื่น จะได้ไม่ต้องถาม Core Hub โดยเปล่าประโยชน์
+    if (!dto.proofUrl || dto.proofUrl.trim().length === 0) {
+      throw AppException.badRequest('กรุณาแนบรูปภาพหลักฐานก่อนยื่นคำร้อง');
+    }
+
     const profile = await this.profiles.ensure(user, token);
     return this.prisma.hourRequest.create({
       data: {
