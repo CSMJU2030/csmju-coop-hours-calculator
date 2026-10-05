@@ -138,3 +138,34 @@ describe('HourRequestsService review (approve / reject)', () => {
     });
   });
 });
+
+describe('HourRequestsService.listForReview (หน้าตรวจคำร้องของอาจารย์)', () => {
+  function setupList(rows: Array<Record<string, unknown>>) {
+    const findMany = jest.fn().mockResolvedValue(rows);
+    const prisma = {
+      hourRequest: { findMany, count: jest.fn().mockResolvedValue(rows.length) },
+      $transaction: (queries: Promise<unknown>[]) => Promise.all(queries),
+    } as unknown as PrismaService;
+    const people = { studentDirectory: jest.fn().mockResolvedValue(new Map()) } as unknown as PeopleService;
+    return { service: new HourRequestsService(prisma, {} as ProfileService, people), findMany };
+  }
+
+  it('เรียงคำร้องที่ยื่นล่าสุดไว้บนสุด เก่าสุดอยู่ล่างสุด', async () => {
+    const { service, findMany } = setupList([]);
+
+    await service.listForReview({ skip: 0, take: 20 } as never, 'teacher-token');
+
+    expect(findMany.mock.calls[0][0].orderBy).toEqual([{ createdAt: 'desc' }, { id: 'desc' }]);
+  });
+
+  it('คืนรายการตามลำดับที่ฐานข้อมูลเรียงมา ไม่สลับลำดับเอง', async () => {
+    const { service } = setupList([
+      { id: 'new', personCode: null, createdAt: new Date('2026-10-05') },
+      { id: 'old', personCode: null, createdAt: new Date('2026-10-01') },
+    ]);
+
+    const { items } = await service.listForReview({ skip: 0, take: 20 } as never, 't');
+
+    expect(items.map((i) => i.id)).toEqual(['new', 'old']);
+  });
+});
