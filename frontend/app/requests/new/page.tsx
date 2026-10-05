@@ -81,7 +81,13 @@ export default function NewHourRequestPage() {
         router.push('/requests');
         router.refresh();
       } else {
-        alert('ไม่สามารถบันทึกข้อมูลลงฐานข้อมูลได้ กรุณาตรวจสอบการเชื่อมต่อ');
+        // บอกสาเหตุจริงจาก backend แทนข้อความกว้าง ๆ ว่าเชื่อมต่อไม่ได้ (ซึ่งทำให้เข้าใจผิด)
+        const result = await res.json().catch(() => null);
+        alert(
+          res.status === 401
+            ? 'เซสชันหมดอายุ กรุณาเข้าสู่ระบบอีกครั้ง แล้วยื่นคำร้องใหม่'
+            : `ยื่นคำร้องไม่สำเร็จ: ${result?.error ?? 'ไม่ทราบสาเหตุ'}`,
+        );
       }
     } catch (err) {
       console.error(err);
