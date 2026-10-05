@@ -4,6 +4,7 @@ import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { RequirePermissions } from '../auth/decorators/require-permissions.decorator';
 import { CoreHubIdentity } from '../auth/core-hub-identity';
 import { Permission } from '../auth/permissions';
+import { HoursService } from '../hours/hours.service';
 import { PrismaService } from '../prisma/prisma.service';
 
 /**
@@ -13,12 +14,15 @@ import { PrismaService } from '../prisma/prisma.service';
  */
 @Controller('v1/me/dashboard')
 export class DashboardController {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly hours: HoursService,
+  ) {}
 
   @Get()
   @RequirePermissions(Permission.PROFILE_READ_OWN)
   async me(@CurrentUser() user: CoreHubIdentity) {
-    const [hourRequests, activities, myRegistrations, summary] = await Promise.all([
+    const [hourRequests, activities, myRegistrations, totals] = await Promise.all([
       this.prisma.hourRequest.findMany({ where: { coreUserId: user.id }, orderBy: { createdAt: 'desc' } }),
       this.prisma.activity.findMany({
         where: { status: { in: [ActivityStatus.OPEN, ActivityStatus.PUBLISHED, ActivityStatus.CLOSED] } },
@@ -29,7 +33,7 @@ export class DashboardController {
         where: { coreUserId: user.id, status: { not: 'CANCELLED' } },
         select: { activityId: true },
       }),
-      this.prisma.userHourSummary.findUnique({ where: { coreUserId: user.id } }),
+      this.hours.totalsFor(user.id),
     ]);
 
     return {
@@ -50,11 +54,8 @@ export class DashboardController {
         status: a.status,
       })),
       registeredActivityIds: myRegistrations.map((r) => r.activityId),
-      summary: {
-        coopHours: summary?.coopHours ?? 0,
-        volunteerHours: summary?.volunteerHours ?? 0,
-        majorHours: summary?.majorHours ?? 0,
-      },
+      // ยอดชั่วโมงคำนวณสดจากคำร้องที่อนุมัติ + กิจกรรมที่ลงทะเบียนได้ที่นั่ง (ยกเลิกแล้วหักคืนทันที)
+      summary: totals,
     };
   }
 }

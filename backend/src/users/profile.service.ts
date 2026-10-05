@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { CoreHubIdentity } from '../auth/core-hub-identity';
 import { PeopleService } from '../core-hub/people.service';
+import { HoursService } from '../hours/hours.service';
 import { PrismaService } from '../prisma/prisma.service';
 
 /** ชั้นปีจากปีที่เข้าศึกษา (พ.ศ.) — ปีการศึกษาใหม่เริ่มราวเดือนมิถุนายน */
@@ -25,6 +26,7 @@ export class ProfileService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly people: PeopleService,
+    private readonly hours: HoursService,
   ) {}
 
   /**
@@ -81,15 +83,17 @@ export class ProfileService {
     const [profiles, directory] = await Promise.all([
       this.prisma.userProfile.findMany({
         where: { coreRole: 'student' },
-        include: { summary: true },
         orderBy: { createdAt: 'asc' },
       }),
       this.people.studentDirectory(token),
     ]);
+    // ยอดชั่วโมงใช้สูตรเดียวกับหน้านักศึกษา (คำนวณสด) ตัวเลขสองหน้าจึงตรงกันเสมอ
+    const totals = await this.hours.totalsForMany(profiles.map((p) => p.coreUserId));
 
     return profiles.map((p) => {
       const person = p.personCode ? directory.get(p.personCode) : undefined;
-      const coopHours = p.summary?.coopHours ?? 0;
+      const hours = totals.get(p.coreUserId);
+      const coopHours = hours?.coopHours ?? 0;
       return {
         coreUserId: p.coreUserId,
         studentCode: p.personCode,
@@ -97,8 +101,8 @@ export class ProfileService {
         major: person?.departmentNameTh ?? null,
         yearLevel: yearLevelFromEntryYear(person?.entryYear ?? null),
         coopHours,
-        volunteerHours: p.summary?.volunteerHours ?? 0,
-        majorHours: p.summary?.majorHours ?? 0,
+        volunteerHours: hours?.volunteerHours ?? 0,
+        majorHours: hours?.majorHours ?? 0,
         eligible: coopHours >= 15,
       };
     });
