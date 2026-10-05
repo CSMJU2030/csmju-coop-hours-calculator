@@ -29,6 +29,14 @@ const NEEDS_RETRY_AFTER = new Set<number>([
 ]);
 const DEFAULT_RETRY_AFTER_SEC = 30;
 
+function isBodyTooLarge(exception: unknown): boolean {
+  return (
+    typeof exception === 'object' &&
+    exception !== null &&
+    (exception as { type?: unknown }).type === 'entity.too.large'
+  );
+}
+
 /**
  * Single place that turns any thrown error into the standard error envelope.
  * Internal details and stack traces stay in the server log (spec §27, §29).
@@ -83,6 +91,22 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
     if (exception instanceof Prisma.PrismaClientKnownRequestError) {
       return this.fromPrismaError(exception);
+    }
+
+    // body ใหญ่เกินขีดจำกัดของ body-parser: เป็นความผิดของคำขอ ไม่ใช่ข้อผิดพลาดภายใน (ไม่ใช่ 500)
+    // รหัส error เป็น enum ปิด (error-codes.json) จึงใช้ VALIDATION_ERROR ที่ต้องมี details เป็น array
+    if (isBodyTooLarge(exception)) {
+      return {
+        status: HttpStatus.BAD_REQUEST,
+        body: {
+          success: false,
+          error: {
+            code: Codes.VALIDATION_ERROR,
+            message: 'Request body is too large',
+            details: ['request body exceeds the size limit'],
+          },
+        },
+      };
     }
 
     return {

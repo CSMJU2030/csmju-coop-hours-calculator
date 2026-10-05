@@ -101,3 +101,27 @@ describe('AllExceptionsFilter', () => {
     expect(response.json).not.toHaveBeenCalled();
   });
 });
+
+describe('AllExceptionsFilter: body too large', () => {
+  it('answers 400 VALIDATION_ERROR (not 500) when body-parser rejects an oversized body', () => {
+    const errors = jest.spyOn(Logger.prototype, 'error').mockImplementation(() => undefined);
+    const response = responseDouble(false);
+    const tooLarge = Object.assign(new Error('request entity too large'), {
+      type: 'entity.too.large',
+      status: 413,
+    });
+
+    new AllExceptionsFilter().catch(tooLarge, hostFor({ method: 'POST', path: '/api/v1/hour-requests' }, response));
+
+    expect(response.status).toHaveBeenCalledWith(400);
+    expect(response.json).toHaveBeenCalledWith({
+      success: false,
+      error: {
+        code: 'VALIDATION_ERROR',
+        message: 'Request body is too large',
+        details: ['request body exceeds the size limit'],
+      },
+    });
+    errors.mockRestore();
+  });
+});
