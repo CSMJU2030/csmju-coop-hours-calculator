@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { formatActivityTime } from '@/lib/activityLabels';
 import Link from 'next/link';
 import { PageBanner, bannerButtonClass } from '@/components/PageBanner';
 
@@ -32,7 +33,7 @@ export default function AdminActivitiesPage() {
             title: item.title,
             category: item.activityType || 'ชั่วโมงวิชาชีพ / สหกิจศึกษา (สาขา)',
             dateStr: new Date(item.date).toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' }),
-            timeStr: `${item.startTime || '09:00'} - ${item.endTime || '16:00'} น.`,
+            timeStr: formatActivityTime(item.startTime, item.endTime),
             location: item.location || 'มหาวิทยาลัยแม่โจ้',
             hours: item.hours,
             capacity: item.capacity,

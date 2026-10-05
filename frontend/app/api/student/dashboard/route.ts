@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { ApiError, UnauthenticatedError, apiFetch, getMyProfileOrNull } from '@/lib/api';
+import { activityCategoryLabel, formatActivityTime } from '@/lib/activityLabels';
 
 /** ใช้คุกกี้ผู้ใช้ จึง prerender ตอน build ไม่ได้ */
 export const dynamic = 'force-dynamic';
@@ -35,6 +36,11 @@ interface DashboardPayload {
     title: string;
     category: string;
     startTime: string;
+    endTime: string;
+    hours: number;
+    coopHours: number;
+    volunteerHours: number;
+    majorHours: number;
     location: string;
     capacity: number;
     registeredCount: number;
@@ -75,15 +81,15 @@ export async function GET() {
     const publishedList = dashboard.activities.map((act) => ({
       id: act.id,
       title: act.title,
-      category: act.category,
+      category: activityCategoryLabel(act),
       dateStr: new Date(act.startTime).toLocaleDateString('th-TH', {
         year: 'numeric',
         month: 'short',
         day: 'numeric',
       }),
-      timeStr: '09:00 - 16:00',
+      timeStr: formatActivityTime(act.startTime, act.endTime),
       location: act.location || 'คณะวิทยาศาสตร์ มหาวิทยาลัยแม่โจ้',
-      hours: 0,
+      hours: act.hours,
       capacity: act.capacity,
       registeredCount: act.registeredCount,
       status: act.status === 'CLOSED' ? 'CLOSED' : 'OPEN',

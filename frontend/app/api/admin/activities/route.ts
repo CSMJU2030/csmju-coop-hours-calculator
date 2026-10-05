@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { apiFetch } from '@/lib/api';
 import { toErrorResponse } from '@/lib/routeErrors';
+import { activityCategoryLabel } from '@/lib/activityLabels';
 
 /** ใช้คุกกี้ผู้ใช้ จึง prerender ตอน build ไม่ได้ */
 export const dynamic = 'force-dynamic';
@@ -18,13 +19,18 @@ interface ApiActivity {
   endTime: string;
   capacity: number;
   hours: number;
+  coopHours: number;
+  volunteerHours: number;
+  majorHours: number;
   status: string;
   createdAt: string;
 }
 
 export async function GET() {
   try {
-    const activities = await apiFetch<ApiActivity[]>('/activities?page=1&limit=100');
+    const rows = await apiFetch<ApiActivity[]>('/activities?page=1&limit=100');
+    // activityType ในฐานข้อมูลเป็น GENERAL เสมอ — หน้าจอต้องการป้ายหมวดที่อ่านได้
+    const activities = rows.map((a) => ({ ...a, activityType: activityCategoryLabel(a) }));
     return NextResponse.json({ success: true, activities });
   } catch (error) {
     // หน้า list เดิมคาดหวัง activities:[] เสมอเมื่อพลาด จึงไม่โยน error ออกไป
@@ -36,7 +42,7 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { title, description, category, hours, dateStr, timeStr, location, capacity } =
+    const { title, description, category, hours, dateStr, timeStr, location, capacity, lecturerInCharge } =
       body as Record<string, string | number | undefined>;
 
     let activityDate = new Date();
@@ -81,7 +87,7 @@ export async function POST(request: Request) {
         endTime: endDateTime.toISOString(),
         registrationDeadline: startDateTime.toISOString(),
         capacity: Number(capacity) || 30,
-        lecturerInCharge: '-',
+        lecturerInCharge: String(lecturerInCharge ?? '').trim() || '-',
         coopHours: isCoop ? activityHours : 0,
         volunteerHours: isCoop ? 0 : activityHours,
         majorHours: 0,

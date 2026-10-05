@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsDateString, IsInt, IsNumber, IsString, Min, MinLength } from 'class-validator';
+import { IsDateString, IsInt, IsNumber, IsString, MaxLength, Min, MinLength } from 'class-validator';
 
 export class CreateActivityDto {
   @IsString()
@@ -27,6 +27,7 @@ export class CreateActivityDto {
   capacity!: number;
 
   @IsString()
+  @MaxLength(200)
   lecturerInCharge!: string;
 
   @Type(() => Number)

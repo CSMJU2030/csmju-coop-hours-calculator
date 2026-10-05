@@ -53,7 +53,7 @@ export default async function AttendancePage({ params }: { params: { id: string 
                 {waiting.map((row) => (
                   <tr key={row.registrationId}>
                     <td className="px-4 py-2.5 text-neutral">{row.queueNumber}</td>
-                    <td className="px-4 py-2.5 text-neutral">{row.username}</td>
+                    <td className="px-4 py-2.5 text-neutral">{row.studentCode ?? '—'}</td>
                     <td className="px-4 py-2.5 text-neutral">{row.displayName ?? '—'}</td>
                   </tr>
                 ))}
