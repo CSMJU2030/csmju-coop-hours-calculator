@@ -213,6 +213,10 @@ export default function StudentDashboardPage() {
   const handleSubmitRequest = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newTitle.trim()) return;
+    if (!newImagePreview) {
+      alert('กรุณาแนบรูปถ่ายหลักฐาน / เกียรติบัตรก่อนส่งคำร้อง');
+      return;
+    }
 
     const newAct: ActivityItem = {
       id: `req-${Date.now()}`,
@@ -235,11 +239,21 @@ export default function StudentDashboardPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newAct),
       });
-      if (res.ok) {
-        await loadAllData();
+      if (!res.ok) {
+        // ค้างหน้าต่างไว้ให้แก้ไขแล้วลองใหม่ ไม่บอกว่าสำเร็จหลอก ๆ
+        const result = await res.json().catch(() => null);
+        alert(
+          res.status === 401
+            ? 'เซสชันหมดอายุ กรุณาเข้าสู่ระบบอีกครั้ง แล้วยื่นคำร้องใหม่'
+            : `ยื่นคำร้องไม่สำเร็จ: ${result?.error ?? 'ไม่ทราบสาเหตุ'}`,
+        );
+        return;
       }
+      await loadAllData();
     } catch (err) {
       console.error('API connection failed');
+      alert('ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้ คำร้องยังไม่ถูกส่ง');
+      return;
     }
 
     setIsSubmitModalOpen(false);
@@ -648,13 +662,18 @@ export default function StudentDashboardPage() {
               </div>
 
               <div>
-                <label className="font-bold block mb-1 text-slate-700">แนบรูปถ่ายหลักฐาน / เกียรติบัตร</label>
+                <label className="font-bold block mb-1 text-slate-700">
+                  แนบรูปถ่ายหลักฐาน / เกียรติบัตร <span className="text-rose-600">*</span>
+                </label>
                 <input
                   type="file"
                   accept="image/*"
                   onChange={handleImageUpload}
                   className="w-full p-2 rounded-xl border border-slate-200 text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer"
                 />
+                {!newImagePreview && (
+                  <p className="mt-1 text-[11px] font-bold text-rose-600">ต้องแนบรูปก่อน จึงจะส่งคำร้องได้</p>
+                )}
                 {newImagePreview && (
                   <div className="mt-2 text-center bg-slate-50 p-2 rounded-xl border border-slate-200">
                     <img src={newImagePreview} alt="Preview" className="max-h-36 mx-auto object-contain rounded-lg" />
@@ -683,7 +702,8 @@ export default function StudentDashboardPage() {
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 active:scale-95 text-white rounded-xl font-bold shadow-lg shadow-blue-500/20 transition cursor-pointer"
+                  disabled={!newImagePreview}
+                  className="px-5 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 active:scale-95 text-white rounded-xl font-bold shadow-lg shadow-blue-500/20 transition cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100"
                 >
                   ส่งให้อาจารย์ตรวจสอบ
                 </button>

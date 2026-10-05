@@ -169,3 +169,48 @@ describe('HourRequestsService.listForReview (หน้าตรวจคำร�
     expect(items.map((i) => i.id)).toEqual(['new', 'old']);
   });
 });
+
+describe('HourRequestsService.create (ยื่นคำร้อง ต้องแนบรูปหลักฐาน)', () => {
+  const student: CoreHubIdentity = {
+    id: 'student-1',
+    email: 's@example.test',
+    coreRole: 'student',
+    subsystemRole: SubsystemRole.STUDENT,
+  };
+
+  function setupCreate() {
+    const create = jest.fn().mockImplementation(async ({ data }: { data: Record<string, unknown> }) => ({ id: 'new', ...data }));
+    const ensure = jest.fn().mockResolvedValue({ personCode: 'S001' });
+    const prisma = { hourRequest: { create } } as unknown as PrismaService;
+    const service = new HourRequestsService(prisma, { ensure } as unknown as ProfileService, {} as PeopleService);
+    return { service, create, ensure };
+  }
+
+  const dto = { title: 'อบรม', hours: 3, category: 'COOP' as const, description: null };
+
+  it.each([[undefined], [null], [''], ['   ']])(
+    'ไม่แนบรูปหลักฐาน (%p) ต้องถูกปฏิเสธ และไม่เขียนอะไรลงฐานข้อมูล',
+    async (proofUrl) => {
+      const { service, create, ensure } = setupCreate();
+
+      await expect(service.create(student, { ...dto, proofUrl } as never, 'token')).rejects.toMatchObject({
+        status: 400,
+      });
+      expect(create).not.toHaveBeenCalled();
+      expect(ensure).not.toHaveBeenCalled();
+    },
+  );
+
+  it('แนบรูปแล้วบันทึกได้ พร้อมรหัสนักศึกษาและรูปหลักฐาน', async () => {
+    const { service, create } = setupCreate();
+
+    await service.create(student, { ...dto, proofUrl: 'data:image/png;base64,AAAA' } as never, 'token');
+
+    expect(create.mock.calls[0][0].data).toMatchObject({
+      coreUserId: 'student-1',
+      personCode: 'S001',
+      proofUrl: 'data:image/png;base64,AAAA',
+      status: HourRequestStatus.PENDING,
+    });
+  });
+});
