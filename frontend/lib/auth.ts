@@ -91,8 +91,6 @@ export function requireAdmin(identity: Identity): void {
  */
 export async function requireIdentity(nextPath = '/'): Promise<Identity> {
   const { redirect } = await import('next/navigation');
-  const loginBase = (process.env.BACKEND_API_URL ?? 'http://127.0.0.1:3012/api/v1').replace(/\/api\/v1\/?$/, '');
-
   try {
     return await getIdentity();
   } catch (error) {

@@ -1,0 +1,3 @@
+# สคริปต์ที่รันใน container (Linux) ต้องใช้ LF เสมอ — CRLF ทำให้ container สตาร์ตไม่ขึ้น
+# (exec ./docker/entrypoint.sh: no such file or directory)
+*.sh text eol=lf

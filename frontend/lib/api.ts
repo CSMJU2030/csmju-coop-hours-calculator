@@ -9,7 +9,9 @@ import { cookies, headers } from 'next/headers';
  * route handler ที่หยิบคุกกี้ส่งต่อไป backend
  */
 
-const BACKEND_API_URL = (process.env.BACKEND_API_URL ?? 'http://127.0.0.1:4210/api/v1').replace(/\/+$/, '');
+// BACKEND_URL ตัวเดียวกับที่ next.config.mjs ใช้ — ตอน dev มาจาก .env.local ใน image คือ http://api:4000 (deployment.md ข้อ 3.2)
+const BACKEND_URL = (process.env.BACKEND_URL ?? 'http://127.0.0.1:4210').replace(/\/+$/, '');
+const BACKEND_API_URL = `${BACKEND_URL}/api/v1`;
 
 /**
  * ชื่อคุกกี้ session ต้องตรงกับ ssoCookieNames(SUBSYSTEM_ID).session ใน backend/src/auth/sso-session.ts

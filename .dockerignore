@@ -1,0 +1,15 @@
+# build context ของ Dockerfile ทั้งสองตัวคือ "รากของ repo" (deployment.md ข้อ 3)
+# DEP-03: ห้ามให้ .env (มี secret) และ node_modules ของเครื่องตัวเองติดเข้า image
+
+**/node_modules
+**/.env
+**/.env.*
+**/dist
+**/generated
+**/coverage
+**/.next
+**/*.log
+**/*.tsbuildinfo
+*.zip
+.git
+standards
