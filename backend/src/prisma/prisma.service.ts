@@ -13,8 +13,10 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
   private readonly logger = new Logger(PrismaService.name);
 
   constructor() {
+    // 37 ระบบใช้ PostgreSQL ตัวกลางร่วมกัน จึงจำกัด connection ต่อระบบ (deployment.md ข้อ 4.1)
     const adapter = new PrismaPg({
       connectionString: process.env.DATABASE_URL,
+      max: Number(process.env.DATABASE_POOL_MAX) || 5,
     });
 
     super({ adapter });
@@ -22,7 +24,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
 
   async onModuleInit(): Promise<void> {
     await this.$connect();
-    this.logger.log('Connected to the demo subsystem database');
+    this.logger.log('Connected to the subsystem database');
   }
 
   async onModuleDestroy(): Promise<void> {
