@@ -1,0 +1,38 @@
+# เครื่องมือเฉพาะตอนพัฒนาในเครื่อง — `docker compose up` อ่านไฟล์นี้ต่อจาก docker-compose.yml เอง
+# บน server ไม่ใช้ไฟล์นี้ (DevOps ใช้ compose ของตัวเอง) จึงไม่มี pgAdmin ที่นั่น
+#
+#   pgAdmin   http://localhost:5050   (ไม่ต้อง login · เห็น server "csmju-coop-hours-calculator" อยู่แล้ว
+#                                      เปิดครั้งแรกใส่รหัสผ่านฐานข้อมูล: postgres)
+#   ต่อด้วยโปรแกรมอื่น (DBeaver ฯลฯ)   localhost:5434 · user postgres · password postgres · db csmju_coop_hours_calculator
+
+services:
+  db:
+    ports:
+      - "127.0.0.1:5434:5432"
+
+  pgadmin:
+    image: dpage/pgadmin4:8
+    container_name: csmju-coop-hours-calculator-pgadmin
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:5050:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@example.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: "False"
+      TZ: Asia/Bangkok
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+      - ./docker/pgadmin/servers.json:/pgadmin4/servers.json:ro
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+
+volumes:
+  pgadmin-data:
