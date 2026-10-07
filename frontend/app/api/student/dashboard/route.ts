@@ -27,6 +27,7 @@ interface DashboardPayload {
     approvedHours: number | null;
     approvedCategory: string | null;
     rejectionReason: string | null;
+    proofUrl?: string | null;
     imageProof: string | null;
     note: string | null;
     createdAt: string;
@@ -78,7 +79,8 @@ export async function GET(request: Request) {
       approvedCategory: req.approvedCategory as 'COOP' | 'VOLUNTEER' | undefined,
       typeCategory: req.typeCategory,
       reason: req.rejectionReason || undefined,
-      imageProof: req.imageProof || undefined,
+      // รูปที่นักศึกษาแนบเก็บที่ proofUrl — imageProof เป็นคอลัมน์เดิมที่ไม่มีใครเขียน
+      imageProof: req.proofUrl || req.imageProof || undefined,
       note: req.note || undefined,
     }));
 

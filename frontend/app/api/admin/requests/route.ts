@@ -11,10 +11,19 @@ export const dynamic = 'force-dynamic';
  * หมายเหตุ: หน้าเดิมอ่านชื่อนักศึกษาจาก field ชื่อ `UserProfile` (ตัวใหญ่) แต่ API
  * ส่ง `userProfile` (ตัวเล็ก) มาให้ ชื่อนักศึกษาจึงไม่เคยแสดงเลย — ที่นี่แนบมาให้
  * ทั้งสองชื่อ เพื่อให้หน้าเดิมแสดงชื่อได้โดยไม่ต้องแก้หน้าเว็บ
+ *
+ * รูปหลักฐาน: นักศึกษาแนบรูปแล้ว backend เก็บไว้ที่ `proofUrl` แต่หน้าตรวจอ่านจาก `imageProof`
+ * (คอลัมน์เดิมที่ไม่มีใครเขียน) อาจารย์จึงไม่เห็นรูป — ที่นี่ส่ง `imageProof` ให้จาก `proofUrl`
+ * พร้อม `categoryTarget` กับ `dateStr` ที่หน้าตรวจอ่านด้วย
  */
 
 interface ApiHourRequest {
   id: string;
+  category?: string;
+  proofUrl?: string | null;
+  imageProof?: string | null;
+  dateStr?: string | null;
+  createdAt?: string;
   studentCode: string | null;
   studentName: string;
   userProfile?: { displayName: string | null; fullName: string | null; studentCode: string | null } | null;
@@ -29,7 +38,18 @@ export async function GET() {
         fullName: req.userProfile?.fullName ?? req.userProfile?.displayName ?? req.studentName,
         studentCode: req.userProfile?.studentCode ?? req.studentCode,
       };
-      return { ...req, userProfile: profile, UserProfile: profile };
+      return {
+        ...req,
+        imageProof: req.proofUrl ?? req.imageProof ?? null,
+        categoryTarget: req.category,
+        dateStr:
+          req.dateStr ??
+          (req.createdAt
+            ? new Date(req.createdAt).toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' })
+            : null),
+        userProfile: profile,
+        UserProfile: profile,
+      };
     });
 
     return NextResponse.json({ success: true, requests: withProfile });
