@@ -1,0 +1,101 @@
+# ทดสอบในเครื่องแบบเดียวกับ server: db + api + web (standards docs/deployment.md ข้อ 6)
+#
+#   docker compose up -d --build   # build image ทั้งสองแล้วรัน
+#   docker compose ps              # ทั้งสามต้อง healthy
+#   docker compose logs api        # ต้องเห็น migration ผ่านและ subsystem.started
+#   docker compose down            # หยุด (ข้อมูลยังอยู่ใน volume) · down -v ลบข้อมูลด้วย
+#
+# - ชื่อ service ต้องเป็น db · api · web และ api ฟังพอร์ต 4000 (BACKEND_URL ใน web image ฝังเป็น http://api:4000)
+# - เปิดเฉพาะ web ที่ 127.0.0.1:3210 เพื่อให้ callback http://localhost:3210/auth/callback ที่ลงทะเบียนไว้ใช้ได้
+# - ค่าด้านล่างเป็นค่าสำหรับรันในเครื่องเท่านั้น — บน server DevOps ตั้ง env เองตาม backend/.env.example
+
+x-hardened: &hardened
+  restart: unless-stopped
+  read_only: true
+  cap_drop: [ALL]
+  security_opt: ["no-new-privileges:true"]
+  tmpfs:
+    - /tmp
+  logging:
+    driver: json-file
+    options:
+      max-size: 10m
+      max-file: "3"
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: csmju-coop-hours-calculator-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: csmju_coop_hours_calculator
+      TZ: Asia/Bangkok
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d csmju_coop_hours_calculator"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+
+  api:
+    <<: *hardened
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: csmju-coop-hours-calculator-api
+    mem_limit: 512m
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: "4000"
+      HOME: /tmp
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/csmju_coop_hours_calculator?schema=public
+      DATABASE_POOL_MAX: "5"
+      CORE_HUB_URL: https://csmju2030.jowave.com
+      CORE_HUB_JWKS_URL: https://csmju2030.jowave.com/api/v1/.well-known/jwks.json
+      CORE_HUB_WEB_URL: https://csmju2030.jowave.com
+      CORE_HUB_ISSUER: core-hub
+      CORE_HUB_AUDIENCE: csmju2030
+      JWKS_CACHE_TTL_MS: "600000"
+      JWKS_MIN_REFRESH_INTERVAL_MS: "30000"
+      JWKS_REQUEST_TIMEOUT_MS: "5000"
+      JWT_CLOCK_TOLERANCE_SEC: "5"
+      SUBSYSTEM_ID: csmju-coop-hours-calculator
+      SUBSYSTEM_NAME: ระบบติดตามชั่วโมงสหกิจและกิจกรรม
+      TZ: Asia/Bangkok
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:4000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      start_period: 40s
+      retries: 5
+
+  web:
+    <<: *hardened
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    container_name: csmju-coop-hours-calculator-web
+    mem_limit: 384m
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:3210:3000"
+    environment:
+      CORE_HUB_WEB_URL: https://csmju2030.jowave.com
+      SUBSYSTEM_ID: csmju-coop-hours-calculator
+      TZ: Asia/Bangkok
+
+volumes:
+  pgdata:
