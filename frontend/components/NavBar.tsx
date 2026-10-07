@@ -8,9 +8,11 @@ import { usePathname } from 'next/navigation';
 export function NavBar({
   userId,
   isAdmin,
+  coreHubUrl,
 }: {
   userId?: string;
   isAdmin?: boolean;
+  coreHubUrl?: string;
 }) {
   const pathname = usePathname();
   const isTeacherPage = isAdmin || pathname.startsWith('/admin');
@@ -51,6 +53,15 @@ export function NavBar({
 
           {/* Profile */}
           <div className="flex items-center gap-3">
+            {coreHubUrl && (
+              // ออกไป Core Hub คนละ origin — ใช้ <a> ไม่ใช้ Link
+              <a
+                href={coreHubUrl}
+                className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-600 transition-colors hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
+              >
+                ← กลับ CSMJU Portal
+              </a>
+            )}
             <div className="text-right">
               <p className="text-sm font-bold text-slate-800">
                 {displayName}

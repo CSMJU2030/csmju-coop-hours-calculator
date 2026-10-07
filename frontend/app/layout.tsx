@@ -5,6 +5,9 @@ import { NavBar } from '@/components/NavBar';
 import { getIdentityOrNull } from '@/lib/auth';
 import { getMyProfileOrNull } from '@/lib/api';
 
+// ปุ่ม "กลับ CSMJU Portal" — อ่านตอนรัน (layout นี้ render ต่อคำขอเพราะอ่านคุกกี้) ห้ามฝัง URL ในโค้ด
+const CORE_HUB_WEB_URL = (process.env.CORE_HUB_WEB_URL ?? 'https://csmju2030.jowave.com').replace(/\/+$/, '');
+
 export const metadata: Metadata = {
   title: 'ระบบติดตามชั่วโมงสหกิจและกิจกรรม | CSMJU2030',
   description:
@@ -22,7 +25,11 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
   return (
     <html lang="th">
       <body>
-        <NavBar userId={profile?.displayName ?? identity?.email} isAdmin={identity?.subsystemRole === 'admin'} />
+        <NavBar
+          userId={profile?.displayName ?? identity?.email}
+          isAdmin={identity?.subsystemRole === 'admin'}
+          coreHubUrl={CORE_HUB_WEB_URL}
+        />
 
         <main className="min-h-[calc(100vh-76px)] lg:ml-[250px]">
           <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
